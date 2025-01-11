@@ -1,4 +1,6 @@
-# ELEC 391
+### ELEC 391
+
+
 # Documentation for Working on Features in Git
 
 This document outlines the process for working on features in this project using Git. Follow these steps to ensure that your work is properly tracked and integrated into the main project.
@@ -12,12 +14,42 @@ When starting to work on a new feature, you should create a new branch specifica
 ```bash
 git checkout -b feature/feature-name
 
+```
+#### Commit Frequently
+As you work on your feature, make sure to commit your changes regularly with clear, concise commit messages. This allows for better tracking of progress and easier rollbacks if necessary.
 
-Replace feature-name with a descriptive name for your feature (e.g., feature/login-page, feature/new-ui, etc.).
-This command creates a new branch and automatically switches to it.
-
+### **2. Commit Regularly
 As you work on your feature, make sure to commit your changes regularly with clear, concise commit messages. This allows for better tracking of progress and easier rollbacks if necessary.
 
 Commands for adding and committing changes:
-Add changes to the staging area
+- Add changes to the staging area:
+  - Adding all changes under the current directory to be staged (NOT PUSHED ANYWHERE): git add .
+- Commit your changes to your local repo BUT NOT the remote github repository
+  - git commit -m "Descriptive commit message"
+
+
+### **3 Pushing your feature branch to github
+Do this everytime you've used git add . on your local repo: 
+  - git push -u origin feature/feature-name
+
+
+
+
+### **4. After Testing to make sure nothing goes wrong add to the main branch
+- Switch to main branch: git checkout main
+- Pull the latest changes from github to make sure your repo is not outdated: git pull origin main
+- Merge your feature branch into main: git merge feature/feature-name
+- Resolve any conflicts that may arise
+- Test again after resolving
+
+
+### **5. After testing with the merged code to main on your local repo push to github
+ - git push origin main
+
+
+### Optional: Deleting a feature branch
+Delete your local feature branch: git branch -d feature/feature-name
+Delete the github feature branch: git push origin --delete feature/feature-name
+
+
 
