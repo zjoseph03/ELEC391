@@ -23,7 +23,8 @@ As you work on your feature, make sure to commit your changes regularly with cle
 
 Commands for adding and committing changes:
 - Add changes to the staging area:
-  - Adding all changes under the current directory to be staged (NOT PUSHED ANYWHERE): git add .
+  - Adding all changes under the current directory to be staged (NOT PUSHED ANYWHERE):
+    - git add .
 - Commit your changes to your local repo BUT NOT the remote github repository
   - git commit -m "Descriptive commit message"
 
@@ -36,9 +37,12 @@ Do this everytime you've used git add . on your local repo:
 
 
 ### **4. After Testing to make sure nothing goes wrong add to the main branch
-- Switch to main branch: git checkout main
-- Pull the latest changes from github to make sure your repo is not outdated: git pull origin main
-- Merge your feature branch into main: git merge feature/feature-name
+- Switch to main branch:
+  - git checkout main
+- Pull the latest changes from github to make sure your repo is not outdated:
+  - git pull origin main
+- Merge your feature branch into main:
+  - git merge feature/feature-name
 - Resolve any conflicts that may arise
 - Test again after resolving
 
@@ -48,8 +52,10 @@ Do this everytime you've used git add . on your local repo:
 
 
 ### Optional: Deleting a feature branch
-Delete your local feature branch: git branch -d feature/feature-name
-Delete the github feature branch: git push origin --delete feature/feature-name
+Delete your local feature branch: 
+ - git branch -d feature/feature-name
+Delete the github feature branch: 
+ - git push origin --delete feature/feature-name
 
 
 
