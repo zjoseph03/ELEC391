@@ -3,6 +3,9 @@ import matplotlib.pyplot as plt
 from collections import deque
 import time
 
+# FIX TO DO: Live Tracking on the plot
+# Right now we're flushing the serial before reading which is correct, but we need to make sure we're reading the entire line, so we can try only reading full lines that exist
+
 ser = serial.Serial('COM8', 9600, timeout=0.1)
 ser.reset_input_buffer()
 buffer_size = 10000
