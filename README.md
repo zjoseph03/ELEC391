@@ -12,7 +12,7 @@ When starting to work on a new feature, you should create a new branch specifica
 
 #### **Command to create and switch to a new branch:**
 ```bash
-git checkout -b feature/feature-name
+git checkout -b branch-name
 
 ```
 #### Commit Frequently
@@ -31,7 +31,7 @@ Commands for adding and committing changes:
 
 ### **3 Pushing your feature branch to github
 Do this everytime you've used git add . on your local repo: 
-  - git push -u origin feature/feature-name
+  - git push -u origin branch-name
 
 
 
@@ -42,7 +42,7 @@ Do this everytime you've used git add . on your local repo:
 - Pull the latest changes from github to make sure your repo is not outdated:
   - git pull origin main
 - Merge your feature branch into main:
-  - git merge feature/feature-name
+  - git merge branch-name
 - Resolve any conflicts that may arise
 - Test again after resolving
 
@@ -53,9 +53,9 @@ Do this everytime you've used git add . on your local repo:
 
 ### Optional: Deleting a feature branch
 Delete your local feature branch: 
- - git branch -d feature/feature-name
+ - git branch -d branch-name
 Delete the github feature branch: 
- - git push origin --delete feature/feature-name
+ - git push origin --delete branch-name
 
 
 ### **Working and pushing directly to main
