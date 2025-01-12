@@ -58,4 +58,10 @@ Delete the github feature branch:
  - git push origin --delete feature/feature-name
 
 
+### **Working and pushing directly to main
+If you create your changes on your local repo while on the main branch and you want to push directly to main use the following commands: 
+git add your-folder/file-name
+git commit -m "Added your-folder-name with relevant contents"
+git push origin main
+
 
