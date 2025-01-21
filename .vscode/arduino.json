@@ -1,4 +1,5 @@
 {
     "board": "arduino:mbed_nano:nano33ble",
-    "port": "COM8"
+    "port": "COM8",
+    "output": "./build"
 }
