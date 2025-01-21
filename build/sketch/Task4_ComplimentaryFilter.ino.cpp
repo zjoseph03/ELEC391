@@ -1,3 +1,5 @@
+#include <Arduino.h>
+#line 1 "d:\\Courses\\ELEC391\\SensorAssignment\\Task4\\Task4_ComplimentaryFilter\\Task4_ComplimentaryFilter.ino"
 #include "Arduino_BMI270_BMM150.h"
 #include <cmath>
 
@@ -8,6 +10,11 @@ float lastRollFiltered = 0;
 float lastPitchFiltered = 0;
 unsigned long previousTime = 0;
 
+#line 11 "d:\\Courses\\ELEC391\\SensorAssignment\\Task4\\Task4_ComplimentaryFilter\\Task4_ComplimentaryFilter.ino"
+void setup();
+#line 20 "d:\\Courses\\ELEC391\\SensorAssignment\\Task4\\Task4_ComplimentaryFilter\\Task4_ComplimentaryFilter.ino"
+void loop();
+#line 11 "d:\\Courses\\ELEC391\\SensorAssignment\\Task4\\Task4_ComplimentaryFilter\\Task4_ComplimentaryFilter.ino"
 void setup() {
   Serial.begin(9600);
   while (!Serial);
@@ -76,3 +83,4 @@ void loop() {
     
   }
 }
+

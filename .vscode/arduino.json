@@ -1,4 +1,6 @@
 {
     "board": "arduino:mbed_nano:nano33ble",
-    "sketch": "SensorAssignment\\Task4\\Task4_ComplimentaryFilter\\Task4_ComplimentaryFilter.ino"
+    "sketch": "SensorAssignment\\Task4\\Task4_ComplimentaryFilter\\Task4_ComplimentaryFilter.ino",
+    "port": "COM8",
+    "output": "./build"
 }

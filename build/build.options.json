@@ -1,0 +1,12 @@
+{
+  "additionalFiles": "",
+  "builtInLibrariesFolders": "C:\\Users\\zachj\\Documents\\Arduino\\libraries",
+  "builtInToolsFolders": "C:\\Users\\zachj\\Documents\\Arduino\\tools-builder,C:\\Users\\zachj\\Documents\\Arduino\\hardware\\tools\\avr,C:\\Users\\zachj\\AppData\\Local\\Arduino15\\packages",
+  "compiler.optimization_flags": "",
+  "customBuildProperties": "build.path=d:\\Courses\\ELEC391\\build,build.warn_data_percentage=75,runtime.tools.rp2040tools.path=C:\\Users\\zachj\\AppData\\Local\\Arduino15\\packages\\arduino\\tools\\rp2040tools\\1.0.6,runtime.tools.rp2040tools-1.0.6.path=C:\\Users\\zachj\\AppData\\Local\\Arduino15\\packages\\arduino\\tools\\rp2040tools\\1.0.6,runtime.tools.arm-none-eabi-gcc.path=C:\\Users\\zachj\\AppData\\Local\\Arduino15\\packages\\arduino\\tools\\arm-none-eabi-gcc\\7-2017q4,runtime.tools.arm-none-eabi-gcc-7-2017q4.path=C:\\Users\\zachj\\AppData\\Local\\Arduino15\\packages\\arduino\\tools\\arm-none-eabi-gcc\\7-2017q4,runtime.tools.bossac.path=C:\\Users\\zachj\\AppData\\Local\\Arduino15\\packages\\arduino\\tools\\bossac\\1.9.1-arduino2,runtime.tools.bossac-1.9.1-arduino2.path=C:\\Users\\zachj\\AppData\\Local\\Arduino15\\packages\\arduino\\tools\\bossac\\1.9.1-arduino2,runtime.tools.openocd.path=C:\\Users\\zachj\\AppData\\Local\\Arduino15\\packages\\arduino\\tools\\openocd\\0.11.0-arduino2,runtime.tools.openocd-0.11.0-arduino2.path=C:\\Users\\zachj\\AppData\\Local\\Arduino15\\packages\\arduino\\tools\\openocd\\0.11.0-arduino2,runtime.tools.dfu-util.path=C:\\Users\\zachj\\AppData\\Local\\Arduino15\\packages\\arduino\\tools\\dfu-util\\0.10.0-arduino1,runtime.tools.dfu-util-0.10.0-arduino1.path=C:\\Users\\zachj\\AppData\\Local\\Arduino15\\packages\\arduino\\tools\\dfu-util\\0.10.0-arduino1",
+  "fqbn": "arduino:mbed_nano:nano33ble",
+  "hardwareFolders": "C:\\Users\\zachj\\Documents\\Arduino\\hardware,C:\\Users\\zachj\\AppData\\Local\\Arduino15\\packages",
+  "otherLibrariesFolders": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries",
+  "runtime.ide.version": "10819",
+  "sketchLocation": "d:\\Courses\\ELEC391\\SensorAssignment\\Task4\\Task4_ComplimentaryFilter\\Task4_ComplimentaryFilter.ino"
+}
