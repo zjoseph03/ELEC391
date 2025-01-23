@@ -1,45 +1,36 @@
-# 1 "d:\\Courses\\ELEC391\\SensorAssignment\\Task1\\BMI270_BMM150_Setup\\BMI270_BMM150_Setup.ino"
+#include <Arduino.h>
+#line 1 "d:\\Courses\\ELEC391\\SensorAssignment\\Task1\\BMI270_BMM150_Setup\\BMI270_BMM150_Setup.ino"
 /*
-
-  Arduino LS  ]=M9DS1 - Simple Accelerometer
-er
-
+  Arduino LS\
+  ]=M9DS1 - Simple Accelerometer
 
   This example reads the acceleration values from the LSM9DS1
-
   sensor and continuously prints them to the Serial Monitor
-
   or Serial Plotter.
 
-
-
   The circuit:
-
   - Arduino Nano 33 BLE Sense
 
-
-
   created 10 Jul 2019
-
   by Riccardo Rizzo
 
-
-
   This example code is in the public domain.
-
 */
-# 18 "d:\\Courses\\ELEC391\\SensorAssignment\\Task1\\BMI270_BMM150_Setup\\BMI270_BMM150_Setup.ino"
-# 19 "d:\\Courses\\ELEC391\\SensorAssignment\\Task1\\BMI270_BMM150_Setup\\BMI270_BMM150_Setup.ino" 2
-# 20 "d:\\Courses\\ELEC391\\SensorAssignment\\Task1\\BMI270_BMM150_Setup\\BMI270_BMM150_Setup.ino" 2
 
+#include "Arduino_BMI270_BMM150.h"
+#include <cmath>
 
-# 21 "d:\\Courses\\ELEC391\\SensorAssignment\\Task1\\BMI270_BMM150_Setup\\BMI270_BMM150_Setup.ino"
+#line 21 "d:\\Courses\\ELEC391\\SensorAssignment\\Task1\\BMI270_BMM150_Setup\\BMI270_BMM150_Setup.ino"
+void setup();
+#line 33 "d:\\Courses\\ELEC391\\SensorAssignment\\Task1\\BMI270_BMM150_Setup\\BMI270_BMM150_Setup.ino"
+void loop();
+#line 21 "d:\\Courses\\ELEC391\\SensorAssignment\\Task1\\BMI270_BMM150_Setup\\BMI270_BMM150_Setup.ino"
 void setup() {
   Serial.begin(9600);
   while (!Serial);
 //  Serial.println("Started");
 
-  if (!IMU_BMI270_BMM150.begin()) {
+  if (!IMU.begin()) {
 //    Serial.println("Failed to initialize IMU!");
     while (1);
   }
@@ -55,8 +46,8 @@ void loop() {
   float ax_g, ay_g, az_g;
 
 
-  if (IMU_BMI270_BMM150.accelerationAvailable()) {
-    IMU_BMI270_BMM150.readAcceleration(x, y, z);
+  if (IMU.accelerationAvailable()) {
+    IMU.readAcceleration(x, y, z);
 
     // Convert raw values to g-force (assuming +/-2g range)
     ax_g = x / 8192;
@@ -71,28 +62,28 @@ void loop() {
 //    Serial.println("Acceleramator X Y Z Roll Pitch");
 //    Serial.println(String(ax_g) + ',' + String(ay_g) + ',' + String(az_g) + ',' + String(roll) + ',' + String(pitch));
 
-
-
+    
+    
   }
 
-  if (IMU_BMI270_BMM150.gyroscopeAvailable()) {
-    IMU_BMI270_BMM150.readGyroscope(x, y, z);
-
+  if (IMU.gyroscopeAvailable()) {
+    IMU.readGyroscope(x, y, z);
+    
 
 //    Serial.print("Gyroscope sample rate = ");
-    Serial.print(IMU_BMI270_BMM150.gyroscopeSampleRate());
-    float deltaT = 1 / IMU_BMI270_BMM150.gyroscopeSampleRate();
+    Serial.print(IMU.gyroscopeSampleRate());
+    float deltaT = 1 / IMU.gyroscopeSampleRate();
     float roll0 = roll;
     float pitch0 = pitch;
 
     float thetaRoll = roll0 + (z * deltaT);
     float thetaPitch = pitch0 + (z * deltaT);
-
+    
 //    Serial.println(" Hz");
 //    Serial.println();
 //    Serial.println("Angular speed in degrees/second");
 //    Serial.println(String(x) + ',' + String(y) + ',' + String(z)); 
-    Serial.println("Roll, Pitch");
+    Serial.println("Roll, Pitch"); 
     Serial.println(String(thetaRoll) + ',' + String(thetaPitch));
 
     // Serial.println("aX aY aZ aRoll aPitch gX gY gZ gRoll gPitch");
@@ -100,3 +91,4 @@ void loop() {
 
     }
 }
+

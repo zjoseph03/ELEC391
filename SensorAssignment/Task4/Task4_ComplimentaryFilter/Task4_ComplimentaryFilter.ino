@@ -1,7 +1,7 @@
 #include "Arduino_BMI270_BMM150.h"
 #include <cmath>
 
-float k = 0.8;  // Complementary filter coefficient
+float k = 0.01;  // Complementary filter coefficient
 float rollFiltered = 0;
 float pitchFiltered = 0;
 float lastRollFiltered = 0;
@@ -46,6 +46,11 @@ void loop() {
   // Gyroscope Readings and Complementary Filter
   if (IMU.gyroscopeAvailable()) {
     IMU.readGyroscope(gx, gy, gz);
+    // Serial.print(IMU.gyroscopeSampleRate());
+    float deltaT = 1 / IMU.gyroscopeSampleRate();
+
+    float thetaRoll = rollAcc + (gz * deltaT);
+    float thetaPitch = pitchAcc + (gz * deltaT);
     
     // Gyroscope angle integration (rate of change to angle)
     float pitchGyro = gz * deltaT;
@@ -72,7 +77,8 @@ void loop() {
     Serial.print(rollGyro, 6); Serial.print(",");
     Serial.print(pitchGyro, 6); Serial.print(",");
     Serial.print(rollFiltered, 6); Serial.print(",");
-    Serial.println(pitchFiltered, 6); Serial.print("\n");
+    Serial.print(pitchFiltered, 6); Serial.print(",");
+    Serial.println(thetaRoll, 6); Serial.print("\n");
     
   }
 }

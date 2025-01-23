@@ -17,22 +17,22 @@ class DataBuffer:
 
 data = DataBuffer(buffer_size)
 plt.ion()
-fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(12, 10))
+fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(13, 10))
 
 lines = {
     'acc_roll': ax1.plot([], [], label='Accelerometer Roll', color='blue')[0],
-    'gyro_roll': ax2.plot([], [], label='Gyroscope Roll Rate', color='red')[0],
+    'gyro_roll': ax2.plot([], [], label='Gyroscope Roll Angle', color='red')[0],
     'filtered_roll': ax3.plot([], [], label='Filtered Roll', color='green')[0]
 }
 
 # Set up plot titles and labels
 ax1.set_title('Unfiltered Accelerometer Roll Angle')
-ax2.set_title('Unfiltered Gyroscope Roll Rate')
+ax2.set_title('Unfiltered Gyroscope Angle')
 ax3.set_title('Filtered Roll Angle')
 
 # Set initial y-axis limits
 ax1.set_ylim([-90, 90])
-ax2.set_ylim([-500, 500])
+ax2.set_ylim([-90, 90])
 ax3.set_ylim([-90, 90])
 
 # Set specific y-axis ticks for filtered roll (every 10 degrees)
@@ -50,7 +50,7 @@ for ax in (ax1, ax2, ax3):
 
 # Add y-axis labels
 ax1.set_ylabel('Angle (degrees)')
-ax2.set_ylabel('Angular Rate (deg/s)')
+ax2.set_ylabel('Angular (degrees)')
 ax3.set_ylabel('Angle (degrees)')
 
 def parse_line(line):
@@ -59,7 +59,7 @@ def parse_line(line):
         if not clean_line:
             return None
         values = [float(x.strip()) for x in clean_line.split(',') if x.strip()]
-        if len(values) == 12:  # Still expect 12 values from Arduino
+        if len(values) == 13:  # Still expect 13 values from Arduino
             return values
     except (ValueError, IndexError) as e:
         print(f"Parse error: {e} on line: {line}")
@@ -76,7 +76,7 @@ def update_plot():
             if values:
                 # Only store roll-related values
                 data.acc_roll.append(values[3])      # Accelerometer roll
-                data.gyro_roll.append(values[8])     # Gyroscope roll rate
+                data.gyro_roll.append(values[12])     # Gyroscope roll rate
                 data.filtered_roll.append(values[10]) # Filtered roll
                 
                 print(f"Roll Data - Acc: {values[3]:.2f}, Gyro: {values[8]:.2f}, Filtered: {values[10]:.2f}")

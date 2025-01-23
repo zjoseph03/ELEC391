@@ -1,5 +1,6 @@
 {
     "board": "arduino:mbed_nano:nano33ble",
     "port": "COM8",
-    "output": "./build"
+    "output": "./build",
+    "sketch": "SensorAssignment\\Task1\\BMI270_BMM150_Setup\\BMI270_BMM150_Setup.ino"
 }

@@ -1,5 +1,5 @@
-d:\Courses\ELEC391\build\sketch\Task4_ComplimentaryFilter.ino.cpp.o: \
- d:\Courses\ELEC391\build\sketch\Task4_ComplimentaryFilter.ino.cpp \
+d:\Courses\ELEC391\build\sketch\BMI270_BMM150_Setup.ino.cpp.o: \
+ d:\Courses\ELEC391\build\sketch\BMI270_BMM150_Setup.ino.cpp \
  C:\Users\zachj\AppData\Local\Arduino15\packages\arduino\hardware\mbed_nano\3.5.4\cores\arduino/Arduino.h \
  C:\Users\zachj\AppData\Local\Arduino15\packages\arduino\hardware\mbed_nano\3.5.4\variants\ARDUINO_NANO33BLE/pinmode_arduino.h \
  C:\Users\zachj\AppData\Local\Arduino15\packages\arduino\hardware\mbed_nano\3.5.4\variants\ARDUINO_NANO33BLE/mbed_config.h \
