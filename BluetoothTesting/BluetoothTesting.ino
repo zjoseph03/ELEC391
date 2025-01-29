@@ -1,5 +1,4 @@
-# 1 "d:\\Courses\\ELEC391\\BluetoothTesting\\BluetoothTesting.ino"
-# 2 "d:\\Courses\\ELEC391\\BluetoothTesting\\BluetoothTesting.ino" 2
+#include <ArduinoBLE.h>
 
 // Define the pins you want to control
 const int LED_PIN = 13;
@@ -13,7 +12,7 @@ void setup() {
   Serial.begin(9600);
   while (!Serial);
 
-
+  
   // Initialize the BLE hardware
   if (!BLE.begin()) {
     Serial.println("Starting BLE failed!");

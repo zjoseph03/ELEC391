@@ -1,5 +1,8 @@
 ### ELEC 391
 
+# Arduino libraries to download
+- ARDUINO_NANO33BLE
+- Arduino_BMI270_BMM150
 
 # Documentation for Working on Features in Git
 

@@ -10,62 +10,157 @@
     "Includepath": "C:\\Users\\zachj\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\mbed_nano\\3.5.4\\variants\\ARDUINO_NANO33BLE"
   },
   {
-    "Sourcefile": "d:\\Courses\\ELEC391\\build\\sketch\\BMI270_BMM150_Setup.ino.cpp",
-    "Include": "Arduino_BMI270_BMM150.h",
-    "Includepath": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries\\Arduino_BMI270_BMM150\\src"
+    "Sourcefile": "d:\\Courses\\ELEC391\\build\\sketch\\BluetoothTesting.ino.cpp",
+    "Include": "ArduinoBLE.h",
+    "Includepath": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries\\ArduinoBLE\\src"
   },
   {
-    "Sourcefile": "d:\\Courses\\ELEC391\\build\\sketch\\BMI270_BMM150_Setup.ino.cpp",
-    "Include": "Wire.h",
-    "Includepath": "C:\\Users\\zachj\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\mbed_nano\\3.5.4\\libraries\\Wire"
-  },
-  {
-    "Sourcefile": "d:\\Courses\\ELEC391\\build\\sketch\\BMI270_BMM150_Setup.ino.cpp",
+    "Sourcefile": "d:\\Courses\\ELEC391\\build\\sketch\\BluetoothTesting.ino.cpp",
     "Include": "",
     "Includepath": null
   },
   {
-    "Sourcefile": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries\\Arduino_BMI270_BMM150\\src\\BMI270.cpp",
+    "Sourcefile": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries\\ArduinoBLE\\src\\BLEAdvertisingData.cpp",
     "Include": "",
     "Includepath": null
   },
   {
-    "Sourcefile": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries\\Arduino_BMI270_BMM150\\src\\utilities\\BMI270-Sensor-API\\bmi2.c",
+    "Sourcefile": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries\\ArduinoBLE\\src\\BLECharacteristic.cpp",
     "Include": "",
     "Includepath": null
   },
   {
-    "Sourcefile": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries\\Arduino_BMI270_BMM150\\src\\utilities\\BMI270-Sensor-API\\bmi270.c",
+    "Sourcefile": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries\\ArduinoBLE\\src\\BLEDescriptor.cpp",
     "Include": "",
     "Includepath": null
   },
   {
-    "Sourcefile": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries\\Arduino_BMI270_BMM150\\src\\utilities\\BMI270-Sensor-API\\bmi270_context.c",
+    "Sourcefile": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries\\ArduinoBLE\\src\\BLEDevice.cpp",
     "Include": "",
     "Includepath": null
   },
   {
-    "Sourcefile": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries\\Arduino_BMI270_BMM150\\src\\utilities\\BMI270-Sensor-API\\bmi270_legacy.c",
+    "Sourcefile": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries\\ArduinoBLE\\src\\BLEService.cpp",
     "Include": "",
     "Includepath": null
   },
   {
-    "Sourcefile": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries\\Arduino_BMI270_BMM150\\src\\utilities\\BMI270-Sensor-API\\bmi270_maximum_fifo.c",
+    "Sourcefile": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries\\ArduinoBLE\\src\\BLEStringCharacteristic.cpp",
     "Include": "",
     "Includepath": null
   },
   {
-    "Sourcefile": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries\\Arduino_BMI270_BMM150\\src\\utilities\\BMI270-Sensor-API\\bmi2_ois.c",
+    "Sourcefile": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries\\ArduinoBLE\\src\\BLETypedCharacteristics.cpp",
     "Include": "",
     "Includepath": null
   },
   {
-    "Sourcefile": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries\\Arduino_BMI270_BMM150\\src\\utilities\\BMM150-Sensor-API\\bmm150.c",
+    "Sourcefile": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries\\ArduinoBLE\\src\\local\\BLELocalAttribute.cpp",
     "Include": "",
     "Includepath": null
   },
   {
-    "Sourcefile": "C:\\Users\\zachj\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\mbed_nano\\3.5.4\\libraries\\Wire\\Wire.cpp",
+    "Sourcefile": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries\\ArduinoBLE\\src\\local\\BLELocalCharacteristic.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries\\ArduinoBLE\\src\\local\\BLELocalDescriptor.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries\\ArduinoBLE\\src\\local\\BLELocalDevice.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries\\ArduinoBLE\\src\\local\\BLELocalService.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries\\ArduinoBLE\\src\\remote\\BLERemoteAttribute.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries\\ArduinoBLE\\src\\remote\\BLERemoteCharacteristic.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries\\ArduinoBLE\\src\\remote\\BLERemoteDescriptor.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries\\ArduinoBLE\\src\\remote\\BLERemoteDevice.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries\\ArduinoBLE\\src\\remote\\BLERemoteService.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries\\ArduinoBLE\\src\\utility\\ATT.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries\\ArduinoBLE\\src\\utility\\BLEUuid.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries\\ArduinoBLE\\src\\utility\\GAP.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries\\ArduinoBLE\\src\\utility\\GATT.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries\\ArduinoBLE\\src\\utility\\HCI.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries\\ArduinoBLE\\src\\utility\\HCICordioTransport.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries\\ArduinoBLE\\src\\utility\\HCIUartTransport.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries\\ArduinoBLE\\src\\utility\\HCIVirtualTransport.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries\\ArduinoBLE\\src\\utility\\L2CAPSignaling.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries\\ArduinoBLE\\src\\utility\\bitDescriptions.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries\\ArduinoBLE\\src\\utility\\btct.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\zachj\\OneDrive - UBC\\Documents\\Arduino\\libraries\\ArduinoBLE\\src\\utility\\keyDistribution.cpp",
     "Include": "",
     "Includepath": null
   }

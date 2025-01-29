@@ -1,5 +1,6 @@
-# 1 "d:\\Courses\\ELEC391\\BluetoothTesting\\BluetoothTesting.ino"
-# 2 "d:\\Courses\\ELEC391\\BluetoothTesting\\BluetoothTesting.ino" 2
+#include <Arduino.h>
+#line 1 "d:\\Courses\\ELEC391\\BluetoothTesting\\BluetoothTesting.ino"
+#include <ArduinoBLE.h>
 
 // Define the pins you want to control
 const int LED_PIN = 13;
@@ -8,12 +9,17 @@ const int LED_PIN = 13;
 BLEService ledService("180A"); // Custom service
 BLEByteCharacteristic ledCharacteristic("2A56", BLERead | BLEWrite); // Custom characteristic
 
+#line 10 "d:\\Courses\\ELEC391\\BluetoothTesting\\BluetoothTesting.ino"
+void setup();
+#line 41 "d:\\Courses\\ELEC391\\BluetoothTesting\\BluetoothTesting.ino"
+void loop();
+#line 10 "d:\\Courses\\ELEC391\\BluetoothTesting\\BluetoothTesting.ino"
 void setup() {
   // Start serial communication
   Serial.begin(9600);
   while (!Serial);
 
-
+  
   // Initialize the BLE hardware
   if (!BLE.begin()) {
     Serial.println("Starting BLE failed!");
