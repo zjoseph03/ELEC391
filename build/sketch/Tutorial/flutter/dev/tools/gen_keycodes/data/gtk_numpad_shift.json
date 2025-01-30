@@ -1,0 +1,13 @@
+#line 1 "d:\\Courses\\ELEC391\\BluetoothTesting\\Tutorial\\flutter\\dev\\tools\\gen_keycodes\\data\\gtk_numpad_shift.json"
+{
+  "Numpad0": "NumpadInsert",
+  "Numpad1": "NumpadEnd",
+  "Numpad2": "NumpadDown",
+  "Numpad3": "NumpadPageDown",
+  "Numpad4": "NumpadLeft",
+  "Numpad6": "NumpadRight",
+  "Numpad7": "NumpadHome",
+  "Numpad8": "NumpadUp",
+  "Numpad9": "NumpadPageUp",
+  "NumpadPeriod": "NumpadDelete"
+}

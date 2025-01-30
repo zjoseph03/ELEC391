@@ -1,71 +1,78 @@
 #include <ArduinoBLE.h>
 
-// Define the pins you want to control
-const int LED_PIN = 13;
+#define BUFFER_SIZE 20
 
-// Create a BLE service and characteristic
-BLEService ledService("180A"); // Custom service
-BLEByteCharacteristic ledCharacteristic("2A56", BLERead | BLEWrite); // Custom characteristic
+// Define a custom BLE service and characteristic
+BLEService customService("00000000-5EC4-4083-81CD-A10B8D5CF6EC");
+BLECharacteristic customCharacteristic(
+    "00000001-5EC4-4083-81CD-A10B8D5CF6EC", BLERead | BLEWrite | BLENotify, BUFFER_SIZE, false);
 
 void setup() {
-  // Start serial communication
   Serial.begin(9600);
   while (!Serial);
 
-  
-  // Initialize the BLE hardware
+  // Initialize the built-in LED to indicate connection status
+  pinMode(LED_BUILTIN, OUTPUT);
+
   if (!BLE.begin()) {
     Serial.println("Starting BLE failed!");
     while (1);
   }
 
-  // Set the local name for the BLE device
-  BLE.setLocalName("ELEC391_A10_Bluetooth");
-  BLE.setAdvertisedService(ledService);
+  // Set the device name and local name
+  BLE.setLocalName("BLE-DEVICE");
+  BLE.setDeviceName("BLE-DEVICE");
 
   // Add the characteristic to the service
-  ledService.addCharacteristic(ledCharacteristic);
+  customService.addCharacteristic(customCharacteristic);
 
   // Add the service
-  BLE.addService(ledService);
+  BLE.addService(customService);
 
-  // Start advertising
+  // Set an initial value for the characteristic
+  customCharacteristic.writeValue("Waiting for data");
+
+  // Start advertising the service
   BLE.advertise();
 
-  // Set the pin mode for the LED pin
-  pinMode(LED_PIN, OUTPUT);
-
-  Serial.println("BLE LED Control is ready");
+  Serial.println("Bluetooth® device active, waiting for connections...");
 }
 
 void loop() {
-  // Listen for BLE peripherals to connect
+  // Wait for a BLE central to connect
   BLEDevice central = BLE.central();
 
-  // If a central is connected to the peripheral
   if (central) {
     Serial.print("Connected to central: ");
     Serial.println(central.address());
+    digitalWrite(LED_BUILTIN, HIGH); // Turn on LED to indicate connection
 
-    // While the central is connected
+    // Keep running while connected
     while (central.connected()) {
-      // Check if the characteristic value has been written
-      if (ledCharacteristic.written()) {
-        // Get the value written to the characteristic
-        byte value = ledCharacteristic.value();
+      // Check if the characteristic was written
+      if (customCharacteristic.written()) {
+       // Get the length of the received data
+        int length = customCharacteristic.valueLength();
 
-        // Control the LED based on the value
-        if (value == 1) {
-          digitalWrite(LED_PIN, HIGH); // Turn on the LED
-          Serial.println("LED is ON");
-        } else if (value == 0) {
-          digitalWrite(LED_PIN, LOW); // Turn off the LED
-          Serial.println("LED is OFF");
-        }
+        // Read the received data
+        const unsigned char* receivedData = customCharacteristic.value();
+
+        // Create a properly terminated string
+        char receivedString[length + 1]; // +1 for null terminator
+        memcpy(receivedString, receivedData, length);
+        receivedString[length] = '\0'; // Null-terminate the string
+
+        // Print the received data to the Serial Monitor
+        Serial.print("Received data: ");
+        Serial.println(receivedString);
+
+
+        // Optionally, respond by updating the characteristic's value
+        customCharacteristic.writeValue("Data received");
       }
     }
 
-    Serial.print("Disconnected from central: ");
-    Serial.println(central.address());
+    digitalWrite(LED_BUILTIN, LOW); // Turn off LED when disconnected
+    Serial.println("Disconnected from central.");
   }
 }

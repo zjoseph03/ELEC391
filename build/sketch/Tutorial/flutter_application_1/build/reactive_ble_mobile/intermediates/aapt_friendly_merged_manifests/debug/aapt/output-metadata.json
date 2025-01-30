@@ -1,0 +1,19 @@
+#line 1 "d:\\Courses\\ELEC391\\BluetoothTesting\\Tutorial\\flutter_application_1\\build\\reactive_ble_mobile\\intermediates\\aapt_friendly_merged_manifests\\debug\\aapt\\output-metadata.json"
+{
+  "version": 3,
+  "artifactType": {
+    "type": "AAPT_FRIENDLY_MERGED_MANIFESTS",
+    "kind": "Directory"
+  },
+  "applicationId": "com.signify.hue.flutterreactiveble",
+  "variantName": "debug",
+  "elements": [
+    {
+      "type": "SINGLE",
+      "filters": [],
+      "attributes": [],
+      "outputFile": "AndroidManifest.xml"
+    }
+  ],
+  "elementType": "File"
+}

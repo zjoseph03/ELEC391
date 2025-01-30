@@ -1,0 +1,7 @@
+#line 1 "d:\\Courses\\ELEC391\\BluetoothTesting\\Tutorial\\flutter\\dev\\tools\\gen_keycodes\\data\\synonyms.json"
+{
+  "Shift": ["ShiftLeft", "ShiftRight"],
+  "Meta": ["MetaLeft", "MetaRight"],
+  "Alt": ["AltLeft", "AltRight"],
+  "Control": ["ControlLeft", "ControlRight"]
+}

@@ -1,0 +1,18 @@
+#line 1 "d:\\Courses\\ELEC391\\BluetoothTesting\\Tutorial\\flutter\\examples\\flutter_view\\ios\\Runner\\MainViewController.h"
+// Copyright 2014 The Flutter Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef MainViewController_h
+#define MainViewController_h
+
+#endif /* MainViewController_h */
+
+#import <UIKit/UIKit.h>
+#import <Flutter/Flutter.h>
+#import "NativeViewController.h"
+
+@protocol NativeViewControllerDelegate;
+
+@interface MainViewController : UIViewController <NativeViewControllerDelegate>
+@end

@@ -1,0 +1,22 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"path": "../../CPEN411"
+		},
+		{
+			"path": "../../ELEC371"
+		},
+		{
+			"path": "C:/M68kV6.0 - 800by480"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"cmath": "cpp"
+		},
+		"liveServer.settings.multiRootWorkspaceName": "ELEC391"
+	}
+}
