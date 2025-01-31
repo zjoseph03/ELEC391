@@ -2,5 +2,5 @@
     "board": "arduino:mbed_nano:nano33ble",
     "port": "COM8",
     "output": "./build",
-    "sketch": "SensorAssignment\\Task4\\Task4_ComplimentaryFilter\\Task4_ComplimentaryFilter.ino"
+    "sketch": "SensorAssignment\\AccelGyroData\\AccelGyroData.ino"
 }
