@@ -1,2 +1,0 @@
-#line 1 "d:\\Courses\\ELEC391\\BluetoothTesting\\Tutorial\\flutter\\docs\\ecosystem\\contributing\\Setting-up-the-Plugins-development-environment.md"
-The flutter/plugins repository is no longer in use. See [Setting up the Packages development environment](Setting-up-the-Packages-development-environment.md) instead.

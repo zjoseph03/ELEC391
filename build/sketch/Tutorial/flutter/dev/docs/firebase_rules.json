@@ -1,7 +1,0 @@
-#line 1 "d:\\Courses\\ELEC391\\BluetoothTesting\\Tutorial\\flutter\\dev\\docs\\firebase_rules.json"
-{
-  "rules": {
-    ".read": false,
-    ".write": false
-  }
-}

@@ -1,7 +1,0 @@
-#line 1 "d:\\Courses\\ELEC391\\BluetoothTesting\\Tutorial\\flutter\\dev\\tools\\gen_keycodes\\data\\gtk_modifier_bit_mapping.json"
-{
-  "SHIFT": ["ShiftLeft", "ShiftLeft", "ShiftRight"],
-  "CONTROL": ["ControlLeft", "ControlLeft", "ControlRight"],
-  "MOD1": ["AltLeft", "AltLeft", "AltRight"],
-  "META": ["MetaLeft", "MetaLeft", "MetaRight"]
-}

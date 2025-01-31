@@ -1,11 +1,8 @@
-# 1 "d:\\Courses\\ELEC391\\SensorAssignment\\Task4\\Task4_ComplimentaryFilter\\Task4_ComplimentaryFilter.ino"
-# 2 "d:\\Courses\\ELEC391\\SensorAssignment\\Task4\\Task4_ComplimentaryFilter\\Task4_ComplimentaryFilter.ino" 2
-# 3 "d:\\Courses\\ELEC391\\SensorAssignment\\Task4\\Task4_ComplimentaryFilter\\Task4_ComplimentaryFilter.ino" 2
+#include "Arduino_BMI270_BMM150.h"
+#include <cmath>
 
-
-# 4 "d:\\Courses\\ELEC391\\SensorAssignment\\Task4\\Task4_ComplimentaryFilter\\Task4_ComplimentaryFilter.ino"
 // Global Variables
-float k = 0.01; // Complementary filter coefficient
+float k = 0.01;  // Complementary filter coefficient
 float lastRollFiltered = 0;
 float lastPitchFiltered = 0;
 unsigned long previousTime = 0;
@@ -20,14 +17,14 @@ typedef struct angleData {
   float gyroPitch;
   float rollFiltered;
   float pitchFiltered;
-} angleData_S;
+} angleData_S; 
 angleData_S angleData;
 
 void setup() {
   Serial.begin(9600);
   while (!Serial);
-  if (!IMU_BMI270_BMM150.begin()) {
-    while (1); // Stop if IMU initialization fails
+  if (!IMU.begin()) {
+    while (1);  // Stop if IMU initialization fails
   }
   previousTime = millis();
 }
@@ -35,8 +32,8 @@ void setup() {
 void getAccelData(float* accelData) {
   float ax, ay, az;
   float ax_g, ay_g, az_g;
-  if (IMU_BMI270_BMM150.accelerationAvailable()) {
-    IMU_BMI270_BMM150.readAcceleration(ax, ay, az);
+  if (IMU.accelerationAvailable()) {
+    IMU.readAcceleration(ax, ay, az);
     ax_g = ax / 8192.0;
     ay_g = ay / 8192.0;
     az_g = az / 8192.0;
@@ -49,15 +46,15 @@ void getAccelData(float* accelData) {
 
 void getGyroData(float* gyroData) {
   float gx, gy, gz;
-  if (IMU_BMI270_BMM150.gyroscopeAvailable()) {
-    IMU_BMI270_BMM150.readGyroscope(gx, gy, gz);
+  if (IMU.gyroscopeAvailable()) {
+    IMU.readGyroscope(gx, gy, gz);
     gyroData[0] = gx;
     gyroData[1] = gy;
     gyroData[2] = gz;
   }
 }
 
-void calculateAngles(float* accelData,
+void calculateAngles(float* accelData, 
                      float* gyroData) {
   // Time step calculation
   unsigned long currentTime = millis();
@@ -70,11 +67,11 @@ void calculateAngles(float* accelData,
   angleData.accelPitch = atan2(accelData[1], sqrt(accelData[0] * accelData[0] + accelData[2] * accelData[2])) * 180.0 / PI;
 
   // Gyroscope-based angles (in degrees)
-  float gyroDeltaT = 1 / IMU_BMI270_BMM150.gyroscopeSampleRate();
+  float gyroDeltaT = 1 / IMU.gyroscopeSampleRate();
 
   angleData.gyroRoll = angleData.accelRoll + (gyroData[2] * gyroDeltaT);
   angleData.gyroPitch = angleData.accelPitch + (gyroData[2] * gyroDeltaT);
-
+  
   // Gyroscope angle integration (rate of change to angle)
   angleData.pitchRate = gyroData[2] * gyroDeltaT;
   angleData.rollRate = gyroData[1] * gyroDeltaT;
@@ -83,33 +80,24 @@ void calculateAngles(float* accelData,
 void calculateFilteredAngles(float* gyroData,
                              float* accelData) {
   // Complementary filter
-  angleData.rollFiltered = (k * (lastRollFiltered + angleData.rollRate)) +
+  angleData.rollFiltered = (k * (lastRollFiltered + angleData.rollRate)) + 
                         ((1-k) * angleData.accelRoll);
-  angleData.pitchFiltered = (k * (lastPitchFiltered + angleData.pitchRate)) +
+  angleData.pitchFiltered = (k * (lastPitchFiltered + angleData.pitchRate)) + 
                           ((1-k) * angleData.accelPitch);
 
   lastRollFiltered = angleData.rollFiltered;
   lastPitchFiltered = angleData.pitchFiltered;
 }
 
-void loop() {
-  float accelData[3];
-  float gyroData[3];
-
-  // Get acceleration data
-  getAccelData(accelData);
-
-  // Gyroscope Readings and Complementary Filter
-  getGyroData(gyroData);
-
-  // Calculate pitch and roll for gyroscope and accelerometer
-  calculateAngles(accelData, gyroData);
-
-  // Apply filter to roll and pitch angles
-  calculateFilteredAngles(gyroData, accelData);
-
+void printSensorData (float* accelData, 
+                      float* gyroData) {
   // Output all values in a single comma-separated line:
-  // Format: ax,ay,az,rollAcc,pitchAcc,gx,gy,gz,rollGyro,pitchGyro,rollFiltered,pitchFiltered
+  // Format: ax,ay,az, 
+  //         AccRoll, AccPitch,
+  //         gx,gy,gz,
+  //         RollRate, PitchRate, 
+  //         FilteredPitch, FilteredGyro,
+  //         GyroRoll
   Serial.print(accelData[0], 6); Serial.print(",");
   Serial.print(accelData[1], 6); Serial.print(",");
   Serial.print(accelData[2], 6); Serial.print(",");
@@ -126,5 +114,25 @@ void loop() {
 
   Serial.print(angleData.rollFiltered, 6); Serial.print(",");
   Serial.print(angleData.pitchFiltered, 6); Serial.print(",");
+  
   Serial.println(angleData.gyroRoll, 6); Serial.print("\n");
+}
+
+void loop() {
+  float accelData[3];
+  float gyroData[3];
+
+  // Get acceleration data
+  getAccelData(accelData);
+
+  // Gyroscope Readings and Complementary Filter
+  getGyroData(gyroData);
+
+  // Calculate pitch and roll for gyroscope and accelerometer
+  calculateAngles(accelData, gyroData);
+  
+  // Apply filter to roll and pitch angles
+  calculateFilteredAngles(gyroData, accelData);
+
+  printSensorData(accelData, gyroData);
 }
