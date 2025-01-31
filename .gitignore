@@ -1,6 +1,6 @@
 .vscode/c_cpp_properties.json
-AltiumTutorial/
+./AltiumTutorial/
 .vscode/settings.json
-BluetoothTesting/Tutorial/flutter/
-build/
+./BluetoothTesting/Tutorial/flutter/
+./build/
 
