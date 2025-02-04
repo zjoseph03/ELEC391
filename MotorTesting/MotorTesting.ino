@@ -1,6 +1,10 @@
 #include "Arduino_BMI270_BMM150.h"
 #include <cmath>
 
+/*
+  Purpose of this file is purely for example code on using the motors
+*/
+
 // Global Variables
 float k = 0.01;  // Complementary filter coefficient
 float lastRollFiltered = 0;
