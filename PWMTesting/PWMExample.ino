@@ -3,7 +3,7 @@
 
 
 #include <Arduino.h>
-#include "ELEC391PWM.h"
+#include "D:\Courses\ELEC391\include\ELEC391PWM.h" // NOTE: FIX THIS SO IT"S NOT DEPENDENT ON MY LOCAL DIRECTORY
 
 // Create PWMController object
 PWMController pwmController;
@@ -16,8 +16,7 @@ void setup() {
   pinMode(ANALOG_INPUT_PIN, INPUT);
 
   // Set up PWM controller. Default duty cycle == 0%. Default Freq == 500Hz
-  pwmController.init(PWM_PIN_9);
-  
+  pwmController.init(PWM_PIN_9);  
 }
 
 void loop() {
@@ -29,5 +28,5 @@ void loop() {
     
     // Example 2: Change frequency from 1Khz to 500Hz and repeat example 1
     pwmController.setFrequency(500);  // Change to 500Hz
-    delay(2000);
+    delay(10);
 }

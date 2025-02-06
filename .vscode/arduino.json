@@ -2,5 +2,5 @@
     "board": "arduino:mbed_nano:nano33ble",
     "port": "COM8",
     "output": "./build",
-    "sketch": "PWMTesting\\PWMTesting.ino"
+    "sketch": "PWMTesting\\PWMExample.ino"
 }
