@@ -3,7 +3,7 @@
 
 
 #include <Arduino.h>
-#include "D:\Courses\ELEC391\include\ELEC391PWM.h" // NOTE: FIX THIS SO IT"S NOT DEPENDENT ON MY LOCAL DIRECTORY
+#include "include/ELEC391PWM.h" // NOTE: FIX THIS SO IT"S NOT DEPENDENT ON MY LOCAL DIRECTORY
 
 // Create PWMController object
 PWMController pwmController;
@@ -22,7 +22,7 @@ void setup() {
 void loop() {
     // Example 1: Ramp up duty cycle every second for 10 seconds from 0% to 10%
     for(float duty = 0; duty <= 100; duty += 10) {
-        pwmController.writePWMDutyCycle(PWM_PIN_9, duty);
+        pwmController.writePWMDutyCycle(duty);
         delay(1000);
     }
     
