@@ -3,10 +3,6 @@
 #include <Arduino.h>
 #include <mbed.h>
 
-#define PWM_PIN_9 9
-#define FREQUENCY_1KHZ 1000 // Max freq = 4.294 Ghz
-#define ANALOG_INPUT_PIN A0 // Analog input pin to control PWM if needed
-
 class PWMController {
   private:
     bool isInitialized;
@@ -17,30 +13,34 @@ class PWMController {
     mbed::PwmOut* pwm;
     uint32_t currentFrequency;
 
+  // Private default constructor - prevents PWMController pwm;
+  PWMController() = delete;
+  void checkInitialized() {
+      if (!isInitialized) {
+          Serial.println("Error: PWM not initialized");
+          while(1);
+      }
+  }
+
   public:
-    PWMController() :
+    PWMController(uint8_t pin) :
       isInitialized(false),
-      currentDigitalPin(D0), // Meaningless value
+      currentDigitalPin(pin),
       currentDutyCycle(0.0f),
       pwm(nullptr),
       currentFrequency(500) // Default 500Hz
-    {}
+    {
+        pwm = new mbed::PwmOut(digitalPinToPinName(pin));
+        pinMode(pin, OUTPUT);
+        isInitialized = true;
+    }
 
     ~PWMController() {
       if (pwm != nullptr) {
           delete pwm;
       }
     }
-
-    void init(uint8_t pin) {
-      if (pwm == nullptr) {
-          pwm = new mbed::PwmOut(digitalPinToPinName(pin));
-          currentDigitalPin = pin;
-          isInitialized = true;
-      }
-      
-    }
-
+     
     void setFrequency(uint32_t freq_hz) {
       if (pwm != nullptr && isInitialized == true) {
           currentFrequency = freq_hz;
@@ -64,7 +64,8 @@ class PWMController {
     float getDutyCycle() const {
       return currentDutyCycle * MAX_DUTY_CYCLE;
     }
-    
+};
+
     // DEPRECIATED CODE (mbedOS allows simple way to change frequency so using that now. DO NOT USE THIS CODE ALONGSIDE mbedOS code)
     // void setResolution(uint8_t bits) {
     //     bits = constrain(bits, 2, 16);
@@ -83,4 +84,3 @@ class PWMController {
     // void writePWMDutyCycle(uint8_t pin, uint8_t dutyCycle) {
     //     analogWrite(pin, dutyCycleToValue(dutyCycle));
     // }
-};

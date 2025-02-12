@@ -4,8 +4,6 @@
 class MotorDriver {
     private:
         bool isInitialized;
-        PWMController* pwmForward;    // Add member declaration
-        PWMController* pwmBackward;   // Add member declaration
     // Private default constructor - prevents PWMController pwm;
     MotorDriver() = delete;
     void checkInitialized() {
@@ -16,13 +14,13 @@ class MotorDriver {
     }
 
     public:
-    MotorDriver(uint8_t ForwardsPWMPin, uint8_t BackwardsPWMPin):
-        isInitialized(false)    // Remove semicolon here
-    {
-        pwmForward = new PWMController(ForwardsPWMPin);
-        pwmBackward = new PWMController(BackwardsPWMPin);
-        isInitialized = true;
-    }
+        MotorDriver(uint8_t ForwardsPWMPin, uint8_t BackwardsPWMPin):
+        isInitialized(false);
+        {
+            pwmForward = new PWMController(ForwardsPWMPin);
+            pwmBackward = new PWMController(BackwardsPWMPin);
+            isInitialized = true;
+        }
         
         ~MotorDriver() {
             if (pwmForward != nullptr) {
@@ -49,11 +47,6 @@ class MotorDriver {
             checkInitialized();
             pwmForward->writePWMDutyCycle(0);
             pwmBackward->writePWMDutyCycle(0);
-        }
-
-        void setDutyCycle(uint32_t dutyCycleFreq) {
-            pwmForward->setFrequency(dutyCycleFreq);
-            pwmBackward->setFrequency(dutyCycleFreq);
         }
     
 };

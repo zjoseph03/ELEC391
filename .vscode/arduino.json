@@ -2,5 +2,5 @@
     "board": "arduino:mbed_nano:nano33ble",
     "port": "COM8",
     "output": "./build",
-    "sketch": "src\\MotorTesting\\MotorTesting.ino"
+    "sketch": "src\\ProofOfConcept\\PocMotorTracking.ino"
 }
