@@ -1,0 +1,24 @@
+Discovered Attributes:
+  Service UUID: 1800
+    Characteristic UUID: 2a00 Properties: Read 
+    Characteristic UUID: 2a01 Properties: Read 
+    Characteristic UUID: 2a04 Properties: Read 
+    Characteristic UUID: 2aa6 Properties: Read 
+  Service UUID: 1801
+    Characteristic UUID: 2a05 Properties: Indicate 
+  Service UUID: 180a
+    Characteristic UUID: 2a23 Properties: Read 
+    Characteristic UUID: 2a24 Properties: Read 
+    Characteristic UUID: 2a25 Properties: Read 
+    Characteristic UUID: 2a26 Properties: Read 
+    Characteristic UUID: 2a27 Properties: Read 
+    Characteristic UUID: 2a28 Properties: Read 
+    Characteristic UUID: 2a29 Properties: Read 
+    Characteristic UUID: 2a2a Properties: Read 
+    Characteristic UUID: 2a50 Properties: Read 
+  Service UUID: 1812
+    Characteristic UUID: 2a4a Properties: Read 
+    Characteristic UUID: 2a4c Properties: WriteWithoutResponse 
+    Characteristic UUID: 2a4e Properties: Read WriteWithoutResponse 
+    Characteristic UUID: 2a4b Properties: Read 
+    Characteristic UUID: 2a4d Properties: Read Notify
