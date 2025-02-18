@@ -4,7 +4,6 @@
 
 // TODO's:
 // TODO: Try this to control the PWM's and then try this with the real motors
-// TODO: Fix code so that when controller disconnects, we can reconnect it without resetting the code 
 // TODO: Find way to uniquely identify just our device because there may be people with this exact same controller in class
 // TODO: Figure out if the debouncing issue with the B and Power button are going to be a problem or what the cause of it is
 // TODO: Remove prints from event handler since it's time critical
@@ -49,10 +48,23 @@ void loop() {
     // Serial.print("In loop\n");
     BLEController::VR30Controller->BLEInit();
   } else if (BLEController::VR30Controller && !BLEController::VR30Controller->peripheral.connected()) {
-    Serial.println("Controller Disconnected\n");
+    Serial.println("Controller Disconnected");
+
+    // Reset flags and clean up
     BLEController::VR30Controller->controllerConnected = false;
     BLEController::VR30Controller->BLEClose();
-  }
+    
+    // Forcefully reset the BLE peripheral object
+    BLEController::VR30Controller->peripheral = BLEDevice(); // Reset peripheral
+    BLE.end();  // Fully shut down BLE stack
+    delay(1000);  // Give some time before restarting BLE
+    BLE.begin(); // Restart BLE stack
+
+    // Restart scanning
+    Serial.println("Restarting BLE Scan...");
+    BLE.scan(false);
+}
+
 
   
 }
