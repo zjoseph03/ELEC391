@@ -15,6 +15,7 @@ void setup() {
   if (!IMU.begin()) {
     while (1);  // Stop if IMU initialization fails
   }
+  
   previousTime = millis();
   // pinMode(2, OUTPUT);
   // pinMode(3, OUTPUT);

@@ -2,5 +2,5 @@
     "board": "arduino:mbed_nano:nano33ble",
     "port": "COM9",
     "output": "./build",
-    "sketch": "src\\MotorTesting\\MotorTesting.ino"
+    "sketch": "src\\BLEControllerTesting\\BLEControllerTesting.ino"
 }

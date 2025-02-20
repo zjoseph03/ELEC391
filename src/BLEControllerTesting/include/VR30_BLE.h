@@ -78,6 +78,7 @@ public:
           Serial.print(" y: "); Serial.print(joy_game->y);
           Serial.print(" buttons: 0x"); Serial.print(joy_game->buttons, HEX);
         } else if (report_len == sizeof(vr_30_mouse)) {
+          // NOTE: This is not going to work correctly because report changes size depending on the button pressed in mouse mode. 
           gameMode = false;
           vr_30_mouse *joy_mouse = (vr_30_mouse *)report;
           Serial.print("Mouse Mode Input: ");
