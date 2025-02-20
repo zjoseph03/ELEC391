@@ -65,6 +65,5 @@ void loop() {
     BLE.scan(false);
 }
 
-
   
 }

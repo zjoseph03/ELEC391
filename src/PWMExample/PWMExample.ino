@@ -97,7 +97,7 @@ void loop() {
     delay(8000);
   }
 
-  Serial.println("Setting all PWM's to 0 for 1 second");
+  Serial.println("Setting all PWM's to 0 for 1  second");
   pwmController.writePWMDutyCycle(0);
   pwmController2.writePWMDutyCycle(0);
   pwmController3.writePWMDutyCycle(0);
