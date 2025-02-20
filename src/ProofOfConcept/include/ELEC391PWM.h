@@ -29,18 +29,18 @@ class PWMController {
     currentDutyCycle(0.0f),
     pwm(nullptr),
     currentFrequency(500) // Default 500Hz
-    {
+  {
+      pinMode(pin, OUTPUT);
       pwm = new mbed::PwmOut(digitalPinToPinName(pin));
-      if (pwm != nullptr) {
-          // Set the default freq to 500 Hz for this pin's PWM
-          uint32_t period_us = 1000000 / currentFrequency;
-          pwm->period_us(period_us);
-          pinMode(pin, OUTPUT);
-          isInitialized = true;
-      } else {
-          Serial.println("Failed to initialize PWM on pin " + String(pin));
-      }
-    }
+    
+      
+      // First set period using direct hardware access
+      uint32_t period_us = 1000000 / currentFrequency;
+      pwm->period_us(period_us);
+      
+      // Mark as initialized
+      isInitialized = true;
+  }
 
       
 
