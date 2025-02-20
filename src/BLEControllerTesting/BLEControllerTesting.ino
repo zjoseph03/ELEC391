@@ -5,7 +5,7 @@
 // TODO's:
 // TODO: Try this to control the PWM's and then try this with the real motors
 // TODO: Find way to uniquely identify just our device because there may be people with this exact same controller in class 
-        // IDEA: Use BLE Bonding to remember previously connected devices, and only connect to them (keys are stored in flash memory)
+        // IDEA: Use BLE Bonding to remember previously connected devices, and only connect to them (keys are stored in flash memory (TRY KVSTORE file system to access CPU Flash memory ))
 // TODO: Figure out if the debouncing issue with the B and Power button are going to be a problem or what the cause of it is
 // TODO: Remove prints from event handler since it's time critical
 // TODO: We don't need to readDescriptors. Purely there for serial prints
