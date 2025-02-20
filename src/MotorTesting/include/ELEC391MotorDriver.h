@@ -21,6 +21,8 @@ class MotorDriver {
     {
         pwmForward = new PWMController(ForwardsPWMPin);
         pwmBackward = new PWMController(BackwardsPWMPin);
+        pwmForward->setFrequency(500);
+        pwmBackward->setFrequency(500);
         isInitialized = true;
     }
         

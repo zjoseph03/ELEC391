@@ -1,41 +1,44 @@
 #include "Arduino_BMI270_BMM150.h"
-#include "include/ELEC391MotorDriver.h" // NOTE: FIX THIS SO IT"S NOT DEPENDENT ON MY LOCAL PATH
-#include <cmath>
+#include "include/ELEC391MotorDriver.h" 
 
-/*
-  Purpose of this file is purely for example code on using the motors
-*/
-
-// Global Variables
-
-// Angle Struct for storing all angle data for filtered angles, gyro angles, and accelerometer angles
-// NOTE: May need to also power nSLEEP for motor driver to work and may need to read back nFAULT 
-
-MotorDriver rightMotor(5, 4);
-MotorDriver leftMotor(3, 2);
+// Global pointers for heap allocation
+MotorDriver* rightMotor;
+MotorDriver* leftMotor;
 
 void setup() {
   Serial.begin(9600);
-  
+  while (!Serial); // Wait for Serial to be ready
+
+  // Allocate objects on heap
+  rightMotor = new MotorDriver(5, 4);
+  leftMotor = new MotorDriver(3, 2);
+
+  Serial.println("MotorDriver instances created");
 }
 
 void loop() {
-  // Example code where we can go forward at 25%, 50%, 75%, 100% speed with 2 seconds between each
-  // Then go backwards at 25%, 50%, 75%, 100% speed with 2 seconds between each
-  // We need to define one PWMController object for the forwards and backwards PWM
-  // For the motor control library, we can init an object with the input being two pins
-  // Then we can have methods in the motor obkect to go forward or backward with the input being the speed
+  Serial.println("Left forward at 50. Right backwards at 25");
+  leftMotor->forward(50);
+  rightMotor->forward(25);
+  delay(1000);
 
-  leftMotor.forward(100);
-  // rightMotor.forward(100);
-  // delay(1000);
-  // rightMotor.backward(100);
-  // delay(1000);
-  // rightMotor.stop();
-  // delay(1000);
-  // leftMotor.forward(100);
-  // delay(1000);
-  // leftMotor.backward(100);
-  // delay(1000);
-  // leftMotor.stop();
+  Serial.println("Left backward at 25. Right backward at 50");
+  rightMotor->backward(50);
+  leftMotor->backward(25);
+  delay(1000);
+
+  Serial.println("Both motors stopped");
+  rightMotor->stop();
+  leftMotor->stop();
+  delay(1000);
+
+  Serial.println("Left backward at 75. Right backward at 25");
+  rightMotor->backward(25);
+  leftMotor->backward(75);
+  delay(1000);
+
+  Serial.println("Both motors stopped");
+  rightMotor->stop();
+  leftMotor->stop();
+  delay(1000);
 }

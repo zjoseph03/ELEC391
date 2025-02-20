@@ -46,6 +46,8 @@ class PWMController {
           currentFrequency = freq_hz;
           uint32_t period_us = 1000000 / freq_hz;
           pwm->period_us(period_us);
+      } else {
+        Serial.println("PWM not properly initialized");
       }
     }
 

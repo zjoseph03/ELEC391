@@ -23,26 +23,17 @@ class PWMController {
   }
 
   public:
-  PWMController(uint8_t pin) :
-    isInitialized(false),
-    currentDigitalPin(pin),
-    currentDutyCycle(0.0f),
-    pwm(nullptr),
-    currentFrequency(500) // Default 500Hz
-  {
-      pinMode(pin, OUTPUT);
-      pwm = new mbed::PwmOut(digitalPinToPinName(pin));
-    
-      
-      // First set period using direct hardware access
-      uint32_t period_us = 1000000 / currentFrequency;
-      pwm->period_us(period_us);
-      
-      // Mark as initialized
-      isInitialized = true;
-  }
-
-      
+    PWMController(uint8_t pin) :
+      isInitialized(false),
+      currentDigitalPin(pin),
+      currentDutyCycle(0.0f),
+      pwm(nullptr),
+      currentFrequency(500) // Default 500Hz
+    {
+        pwm = new mbed::PwmOut(digitalPinToPinName(pin));
+        pinMode(pin, OUTPUT);
+        isInitialized = true;
+    }
 
     ~PWMController() {
       if (pwm != nullptr) {
@@ -55,6 +46,8 @@ class PWMController {
           currentFrequency = freq_hz;
           uint32_t period_us = 1000000 / freq_hz;
           pwm->period_us(period_us);
+      } else {
+        Serial.println("PWM not properly initialized");
       }
     }
 
