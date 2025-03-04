@@ -16,7 +16,7 @@ void setup() {
   if (ret != 0) {
     Serial.println("Flash initialization failed");
     return;
-  }
+  
 
   // Get flash memory information
   const uint32_t flash_start = flash.get_flash_start();

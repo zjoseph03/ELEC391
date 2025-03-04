@@ -16,6 +16,7 @@
 #include <ArduinoBLE.h>
 #include "include/VR30_BLE.h"
 #include "include/AccelGyro.h"
+#include "include/MotorControl.h"
 
 // Interrupt includes
 #include <mbed.h>
@@ -26,9 +27,18 @@
 BLEController controllerInstance;
 BLEController* BLEController::VR30Controller = nullptr;
 
+
 // Sensor Constants
 mbed::Ticker samplingTicker;
 const int samplingFreq = 100; // Sample sensor at 100 Hz (every 10ms). Need to experiment to see what sampling freq we can use
+
+void updateMotorsBLE(bool controllerUpdated, vr_30_mouse* mouseController) {
+  if (controllerUpdated == true) {
+    bleControllerUpdated = false;
+  } else {
+    return;
+  }
+}
 
 void setup() {
   Serial.begin(115200);
@@ -87,16 +97,17 @@ void loop() {
   // Only begin sampling once BLE controller has been connected. 
   // If connected midway, robot has to stall. We can control from interrupt because I2C and other Arduino functions to get sensor data is unpredictable
   if (sampleFlag && BLEController::VR30Controller->controllerConnected) {
-    Serial.print("Missed samples: ");
-    Serial.println(missedSamples);
+    // Serial.print("Missed samples: ");
+    // Serial.println(missedSamples);
     
     getAccelData();
     getGyroData();
+    updateMotorsBLE(BLEController::VR30Controller->bleControllerUpdated, BLEController::VR30Controller->joy_mouse);
 
     calculateAngles();
     calculateFilteredAngles();
 
-    printData();
+    // printData();
 
     sampleFlag = false;
     missedSamples = 0;

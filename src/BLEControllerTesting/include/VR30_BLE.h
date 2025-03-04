@@ -21,6 +21,7 @@ typedef struct __attribute__((__packed__)) {
   uint16_t buttons;
 } vr_30_game;
 
+// NOTE: If we press the button above the power button it changes to analog mode and changes the Report format
 typedef struct __attribute__((__packed__)) {
   uint8_t powerSelect;
   uint8_t buttons;
@@ -36,6 +37,9 @@ public:
   BLEDevice peripheral;
   BLEService HIDService;
   BLECharacteristic HIDReportCharacteristic;
+  bool bleControllerUpdated = false;
+  vr_30_mouse *joy_mouse;
+  vr_30_game *joy_game;
 
   // Global pointer to the robot instance for the static callback
   static BLEController* VR30Controller;
@@ -72,7 +76,7 @@ public:
         // NOTE: Remove serial prints since this is a time critical event handler.
         if (report_len == sizeof(vr_30_game)) {
           gameMode = true;
-          vr_30_game *joy_game = (vr_30_game *)report;
+          joy_game = (vr_30_game *)report;
           Serial.print("Game Mode Input: ");
           Serial.print("x: "); Serial.print(joy_game->x);
           Serial.print(" y: "); Serial.print(joy_game->y);
@@ -80,8 +84,9 @@ public:
         } else if (report_len == sizeof(vr_30_mouse)) {
           // NOTE: This is not going to work correctly because report changes size depending on the button pressed in mouse mode. 
           gameMode = false;
-          vr_30_mouse *joy_mouse = (vr_30_mouse *)report;
+          joy_mouse = (vr_30_mouse *)report;
           Serial.print("Mouse Mode Input: ");
+          bleControllerUpdated = true;
           // We can add some code here later to parse the mouse mode inputs
         }
         Serial.println();
@@ -96,7 +101,8 @@ public:
   void BLEInit () {
     // check if a peripheral has been discovered
     peripheral = BLE.available();
-    // Serial.print("Searching\n");
+    Serial.print("Searching\n");
+    Serial.println(peripheral.localName());
     if (peripheral && peripheral.localName() == "MOCUTE-052Fe-AUTO") {
         // discovered a peripheral, print out address, local name, and advertised service
         Serial.print(peripheral.address());
