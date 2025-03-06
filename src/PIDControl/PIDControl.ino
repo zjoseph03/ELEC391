@@ -7,9 +7,9 @@ PWMController pwmController2(3); // motor 1 backward
 PWMController pwmController3(4); // motor 2 forward
 PWMController pwmController4(5); // motor 2 backward
 // PID tuning constants
-float Kp = 50.0;   // Proportional gain
-float Ki = 0.0;    // Integral gain
-float Kd = 1.0;    // Derivative gain
+float Kp = 8.0;   // Proportional gain
+float Ki = 1;    // Integral gain
+float Kd = 0.1;    // Derivative gain
 // PID variables
 float pidError = 0, previousError = 0;
 float integral = 0, derivative = 0;
@@ -47,23 +47,23 @@ void loop() {
   calculateAngles(accelDataTemp, gyroDataTemp);
   calculateFilteredAngles(gyroDataTemp, accelDataTemp);
   // Debug printing of sensor values
-  Serial.print("\n\n\n");
-  Serial.print("Gyro Data: ");
-  Serial.print(gyroData.gx);
-  Serial.print(", ");
-  Serial.print(gyroData.gy);
-  Serial.print(", ");
-  Serial.println(gyroData.gz);
+  // Serial.print("\n\n\n");
+  // Serial.print("Gyro Data: ");
+  // Serial.print(gyroData.gx);
+  // Serial.print(", ");
+  // Serial.print(gyroData.gy);
+  // Serial.print(", ");
+  // Serial.println(gyroData.gz);
   
-  Serial.print("Accel Data: ");
-  Serial.print(accelData.ax);
-  Serial.print(", ");
-  Serial.print(accelData.ay);
-  Serial.print(", ");
-  Serial.println(accelData.az);
+  // Serial.print("Accel Data: ");
+  // Serial.print(accelData.ax);
+  // Serial.print(", ");
+  // Serial.print(accelData.ay);
+  // Serial.print(", ");
+  // Serial.println(accelData.az);
   
-  Serial.print("Roll (Filtered): ");
-  Serial.println(angleData.rollFiltered, 6);
+  // Serial.print("Roll (Filtered): ");
+  // Serial.println(angleData.rollFiltered, 6);
   
   // Calculate time step (dt)
   unsigned long pidCurrentTime = millis();
@@ -73,7 +73,7 @@ void loop() {
   // --- PID Control Calculations ---
   // Error is the difference between the desired setpoint (0Â°) and the measured roll angle.
   pidError = setpoint - angleData.rollFiltered;
-  
+  // Serial.println(angleData.rollFiltered);
   // Integrate the pidError over time
   integral += pidError * dt;
   
@@ -85,6 +85,12 @@ void loop() {
   previousError = pidError;
   
   // Debug print of the PID output
+  Serial.print("PID ERROR: ");
+  Serial.println(pidError, 6);
+  Serial.print("PID INTEGRAL: ");
+  Serial.println(integral, 6);
+  Serial.print("PID DERIVITIVE: ");
+  Serial.println(derivative, 6);
   Serial.print("PID Output: ");
   Serial.println(output, 6);
   
@@ -102,9 +108,9 @@ void loop() {
     pwmController3.writePWMDutyCycle(motorSpeed);
     pwmController4.writePWMDutyCycle(0);
     
-    Serial.println("Moving Forward (Correcting Tilt)");
-    Serial.print("Motor Speed: ");
-    Serial.println(motorSpeed);
+    // Serial.println("Moving Forward (Correcting Tilt)");
+    // Serial.print("Motor Speed: ");
+    // Serial.println(motorSpeed);
   } else if (output < 0) {
     // Correcting for a tilt that requires backward movement:
     // Activate forward channels to drive the robot backward.
@@ -113,9 +119,9 @@ void loop() {
     pwmController3.writePWMDutyCycle(0);
     pwmController4.writePWMDutyCycle(motorSpeed);
     
-    Serial.println("Moving Backward (Correcting Tilt)");
-    Serial.print("Motor Speed: ");
-    Serial.println(motorSpeed);
+    // Serial.println("Moving Backward (Correcting Tilt)");
+    // Serial.print("Motor Speed: ");
+    // Serial.println(motorSpeed);
   } else {
     // If PID output is zero, stop the motors.
     pwmController.writePWMDutyCycle(0);
@@ -123,9 +129,9 @@ void loop() {
     pwmController3.writePWMDutyCycle(0);
     pwmController4.writePWMDutyCycle(0);
     
-    Serial.println("No Movement (Balanced)");
+    // Serial.println("No Movement (Balanced)");
   }
   
   // Small delay for loop stability (if needed)
-  delay(10);
+  // delay(10);
 }

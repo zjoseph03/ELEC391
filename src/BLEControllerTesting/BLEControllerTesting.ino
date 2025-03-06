@@ -13,6 +13,17 @@
 // TODO: We don't need to readDescriptors. Purely there for serial prints
 // TODO: Create mapping or a table to identify the packets and values stored in the struct with real commands
 
+// Digital Mapping:
+// Forward: 00 B3
+// Backward: 00 B4
+// Left: 00 B5
+// Right: 00 B6
+
+// A: 00 E9
+// X: 00 CD
+// B: 00 EA
+// Y: 00 40
+
 #include <ArduinoBLE.h>
 #include "include/VR30_BLE.h"
 #include "include/AccelGyro.h"
@@ -32,9 +43,9 @@ BLEController* BLEController::VR30Controller = nullptr;
 mbed::Ticker samplingTicker;
 const int samplingFreq = 100; // Sample sensor at 100 Hz (every 10ms). Need to experiment to see what sampling freq we can use
 
-void updateMotorsBLE(bool controllerUpdated, vr_30_mouse* mouseController) {
-  if (controllerUpdated == true) {
-    bleControllerUpdated = false;
+void updateMotorsBLE() {
+  if (BLEController::VR30Controller->bleControllerUpdated == true) {
+    BLEController::VR30Controller->bleControllerUpdated = false;
   } else {
     return;
   }
@@ -102,7 +113,7 @@ void loop() {
     
     getAccelData();
     getGyroData();
-    updateMotorsBLE(BLEController::VR30Controller->bleControllerUpdated, BLEController::VR30Controller->joy_mouse);
+    updateMotorsBLE();
 
     calculateAngles();
     calculateFilteredAngles();

@@ -100,6 +100,7 @@ public:
 
   void BLEInit () {
     // check if a peripheral has been discovered
+    BLE.scanForName("MOCUTE-052Fe-AUTO", true);
     peripheral = BLE.available();
     Serial.print("Searching\n");
     Serial.println(peripheral.localName());
