@@ -5,6 +5,8 @@ float k = 0.01;  // Complementary filter coefficient
 float lastRollFiltered = 0;
 float lastPitchFiltered = 0;
 unsigned long previousTime = 0;
+volatile bool sampleFlag = false;
+int missedSamples = 0;
 
 // Angle Struct for storing all angle data for filtered angles, gyro angles, and accelerometer angles
 typedef struct gyroData {
@@ -33,21 +35,17 @@ typedef struct angleData {
 } angleData_S; 
 angleData_S angleData;
 
-void getAccelData(float* accelDataTemp) {
+void getAccelData() {
   float ax, ay, az;
   if (IMU.accelerationAvailable()) {
     IMU.readAcceleration(ax, ay, az);
     accelData.ax = ax / 8192.0;
     accelData.ay = ay / 8192.0;
     accelData.az = az / 8192.0;
-
-    // accelData.ax = ax_g;
-    // accelData.ay = ay_g;
-    // accelData.az = az_g;
   }
 }
 
-void getGyroData(float* gyroDataTemp) {
+void getGyroData() {
   float gx, gy, gz;
   if (IMU.gyroscopeAvailable()) {
     IMU.readGyroscope(gx, gy, gz);
@@ -57,8 +55,7 @@ void getGyroData(float* gyroDataTemp) {
   }
 }
 
-void calculateAngles(float* accelDataTemp, 
-                     float* gyroDataTemp) {
+void calculateAngles() {
   // Time step calculation
   unsigned long currentTime = millis();
   previousTime = currentTime;
@@ -80,8 +77,7 @@ void calculateAngles(float* accelDataTemp,
   angleData.rollRate = gyroData.gy * gyroDeltaT;
 }
 
-void calculateFilteredAngles(float* gyroDataTemp,
-                             float* accelDataTemp) {
+void calculateFilteredAngles() {
   // Complementary filter
   angleData.rollFiltered = (k * (lastRollFiltered + angleData.rollRate)) + 
                         ((1-k) * angleData.accelRoll);
@@ -90,4 +86,29 @@ void calculateFilteredAngles(float* gyroDataTemp,
 
   lastRollFiltered = angleData.rollFiltered;
   lastPitchFiltered = angleData.pitchFiltered;
+}
+
+// We can split this into two different flags for the accelleromotor and gyroscope if we need to sample at different rates
+void sampleSensors() {
+  sampleFlag = true;
+  missedSamples++; // We can use this if we run into problems with missing samples at the current freq. 
+}
+
+void printData() {
+  Serial.println();
+  Serial.println("Gyro Data: ");
+  Serial.println(gyroData.gx);
+  Serial.println(gyroData.gy);
+  Serial.println(gyroData.gz);
+
+
+  Serial.println();
+  Serial.println("Accel Data: ");
+  Serial.println(accelData.ax);
+  Serial.println(accelData.ay);
+  Serial.println(accelData.az);
+
+  Serial.print("\nRoll: ");
+  Serial.println(angleData.rollFiltered,6);
+  Serial.println();
 }
