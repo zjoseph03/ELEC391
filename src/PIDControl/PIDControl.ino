@@ -7,13 +7,13 @@ PWMController pwmController2(3); // motor 1 backward
 PWMController pwmController3(4); // motor 2 forward
 PWMController pwmController4(5); // motor 2 backward
 // PID tuning constants
-double kpValues[] = {0.001, 0.0015, 0.002, 0.0025};
+double kpValues[] = {1.2, 1.2, 1.2, 1.2};
 int currentKpIndex = 0; 
 unsigned long kpTestStartTime;
 const unsigned long kpTestDuration = 20000;
-double Kp = 8.0;   // Proportional gain
-float Ki = 1;    // Integral gain
-float Kd = 0.1;    // Derivative gain
+double Kp = 1.2;   // Proportional gain
+float Ki = 6.15;    // Integral gain
+float Kd = 0.0585;    // Derivative gain
 // PID variables
 double pidError = 0, previousError = 0;
 float integral = 0, derivative = 0;
@@ -34,11 +34,14 @@ void setup() {
   }
   
   pidPreviousTime = millis();
-  Kd = kpValues[currentKpIndex];
+  Kp = kpValues[currentKpIndex];
   kpTestStartTime = millis();
+  Kp = 1.2;   // Proportional gain
+  Ki = 6.15;    // Integral gain
+  Kd = 0.0585;    // Derivative gain
   
-  Serial.print("Starting test with Kp = ");
-  Serial.println(Kp);
+  // Serial.print("Starting test with Kp = ");
+  // Serial.println(Kp);
   
   // Set PWM frequency to 500Hz for all motor controllers
   pwmController.setFrequency(2000);
@@ -60,8 +63,8 @@ void loop() {
     // Serial.print("Missed samples: ");
     // Serial.println(missedSamples);
     currentTime = millis();
-    Kp = 2.0;
-    Ki = 0;
+    // Kd = 0.0;
+    // Ki = 0.0;
   
     // Check if it's time to switch to the next Kp value
     if (currentTime - kpTestStartTime >= kpTestDuration) {
@@ -76,14 +79,17 @@ void loop() {
       
       // Check if we've tested all values
       if (currentKpIndex < 4) {
-        Kd = kpValues[currentKpIndex];
+        Kp = kpValues[currentKpIndex];
         kpTestStartTime = currentTime;
+        Kp = 1.2;   // Proportional gain
+        Ki = 6.15;    // Integral gain
+        Kd = 0.0585;    // Derivative gain
         
-        Serial.print("Switching to Kd = ");
-        Serial.println(Kd, 6);
+        // Serial.print("Switching to Kd = ");
+        // Serial.println(Kd, 6);
       } else {
         // All tests complete
-        Serial.println("All Kp tests complete");
+        //Serial.println("All Kp tests complete");
         // Stop motors
         stopAllMotors();
         while(1); // Halt program or implement a restart mechanism
@@ -124,17 +130,24 @@ void loop() {
         Serial.println(Kd, 6);
         Serial.print("PID ERROR: ");
         Serial.println(pidError, 6);
-        // Serial.print("PID INTEGRAL: ");
-        // Serial.println(integral, 6);
+        Serial.print("PID INTEGRAL: ");
+        Serial.println(integral, 6);
         Serial.print("PID DERIVITIVE: ");
         Serial.println(derivative, 6);
-        Serial.print("PID Output: ");
-        Serial.println(output, 6);
+        Serial.print("Kp=");
+        Serial.print(Kp, 6);
+        Serial.print(", Output=");
+        Serial.print(output, 6);
+        Serial.print(", Angle=");
+        Serial.println(angleData.rollFiltered, 6);
+        Serial.println();
+        Serial.println();
         Serial.println();
         
+        
         // Convert the PID output to a motor speed (constrained to PWM range 0-255)
-        int motorSpeed = constrain(abs(output), 0, 50);
-        motorSpeed = (motorSpeed * 100) / 50; // Convert to percentage
+        int motorSpeed = constrain(abs(output), 0, (40.0*Kp));
+        motorSpeed = (motorSpeed * 100) / (40.0*Kp); // Convert to percentage
         // --- Motor Control Based on PID Output ---
         // If the output is positive, drive one set of PWM channels;
         // if negative, drive the opposite channels.
