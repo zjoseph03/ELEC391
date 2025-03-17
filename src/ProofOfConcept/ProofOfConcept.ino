@@ -35,7 +35,7 @@ void loop() {
   float roll;
   float dutyCycle;
   float dutyCycleBackwards;
-  int i;
+
 
   getGyroData(gyroDataTemp);
   getAccelData(accelDataTemp);

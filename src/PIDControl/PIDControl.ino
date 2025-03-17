@@ -37,9 +37,9 @@ void setup() {
   Kp = kpValues[currentKpIndex];
   kpTestStartTime = millis();
   Kp = 1.2;   // Proportional gain
-  Ki = 6.15;    // Integral gain
-  Kd = 0.0585;    // Derivative gain
-  
+  Ki = 0;    // Integral gain
+  Kd = 0.004;    // Derivative gain
+  k
   // Serial.print("Starting test with Kp = ");
   // Serial.println(Kp);
   
