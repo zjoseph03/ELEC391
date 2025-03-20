@@ -69,7 +69,7 @@ void setup() {
   Kd = 0.0;   // Moderate derivative for dampening oscillations
   
   // Kd = kpValues[0];    // Derivative gain
-  
+
   // Serial.print("Starting test with Kp = ");
   // Serial.println(Kp);
   

@@ -6,6 +6,15 @@ float lastRollFiltered = 0;
 float lastPitchFiltered = 0;
 unsigned long previousTime = 0;
 
+float Kp = 10.0;  // Proportional gain
+float Ki = 0.1;   // Integral gain
+float Kd = 5.0;   // Derivative gain
+
+float errorValue, previousError = 0;
+float integral = 0, derivative = 0;
+float output;
+float setpoint = 0; // Target angle (upright position)
+
 // Angle Struct for storing all angle data for filtered angles, gyro angles, and accelerometer angles
 typedef struct gyroData {
   float gx;
