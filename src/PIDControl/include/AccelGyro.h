@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "Arduino_BMI270_BMM150.h"
 
-float k = 0.01;  // Complementary filter coefficient
+float k = 0.98;  // Complementary filter coefficient
 float lastRollFiltered = 0;
 float lastPitchFiltered = 0;
 unsigned long previousTime = 0;
@@ -56,25 +56,22 @@ void getGyroData() {
 }
 
 void calculateAngles() {
-  // Time step calculation
+  // Time step calculation - FIX: Calculate proper delta time
   unsigned long currentTime = millis();
+  float dt = (currentTime - previousTime) / 1000.0; // in seconds
   previousTime = currentTime;
 
-  // Accelerometer-based angles (in degrees)
-  // atan(-x / sqrt(y^2 + z^2)) for roll
-  // atan( y / sqrt(x^2 + z^2)) for pitch
+  // Accelerometer-based angles (in degrees) - KEEP THIS PART
   angleData.accelRoll = atan2(-accelData.ax, sqrt(accelData.ay * accelData.ay + accelData.az * accelData.az)) * 180.0 / PI;
   angleData.accelPitch = atan2(accelData.ay, sqrt(accelData.ax * accelData.ax + accelData.az * accelData.az)) * 180.0 / PI;
 
-  // Gyroscope-based angles (in degrees)
-  float gyroDeltaT = 1 / IMU.gyroscopeSampleRate();
-
-  angleData.gyroRoll = angleData.accelRoll + (gyroData.gz * gyroDeltaT);
-  angleData.gyroPitch = angleData.accelPitch + (gyroData.gz * gyroDeltaT);
+  // FIX: Correct gyro rate calculation with proper axis mapping
+  angleData.rollRate = gyroData.gx * dt;  // X-axis for roll rate
+  angleData.pitchRate = gyroData.gy * dt; // Y-axis for pitch rate
   
-  // Gyroscope angle integration (rate of change to angle)
-  angleData.pitchRate = gyroData.gz * gyroDeltaT;
-  angleData.rollRate = gyroData.gy * gyroDeltaT;
+  // FIX: Proper gyro angle integration
+  angleData.gyroRoll += angleData.rollRate;
+  angleData.gyroPitch += angleData.pitchRate;
 }
 
 void calculateFilteredAngles() {
