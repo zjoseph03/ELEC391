@@ -65,8 +65,8 @@ void setup() {
   kpTestStartTime = millis();
 
   Kp = 18.0;    // Less aggressive proportional response
-  Ki = 0.0;    // Start with zero to avoid windup
-  Kd = 0.0;   // Moderate derivative for dampening oscillations
+  Ki = 100.0;    // Start with zero to avoid windup
+  Kd = 1.3;   // Moderate derivative for dampening oscillations
   
   // Kd = kpValues[0];    // Derivative gain
 
@@ -156,6 +156,7 @@ void loop() {
         // Serial.println(pidError);
         // Integrate the pidError over time
         integral += pidError * dt;
+        // integral = constrain(integral, -30, 30);
         
         // Calculate the derivative (rate of change of pidError)
         derivative = (pidError - previousError) / dt;

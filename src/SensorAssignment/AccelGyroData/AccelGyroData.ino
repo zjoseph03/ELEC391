@@ -1,3 +1,4 @@
+//#include <Arduino_LSM9DS1.h>
 #include "Arduino_BMI270_BMM150.h"
 #include <cmath>
 
@@ -25,6 +26,7 @@ void setup() {
   while (!Serial);
   if (!IMU.begin()) {
     while (1);  // Stop if IMU initialization fails
+    Serial.println("Sensor Init Failed");
   }
   previousTime = millis();
 }
@@ -122,17 +124,37 @@ void loop() {
   float accelData[3];
   float gyroData[3];
 
-  // Get acceleration data
-  getAccelData(accelData);
-
-  // Gyroscope Readings and Complementary Filter
-  getGyroData(gyroData);
-
-  // Calculate pitch and roll for gyroscope and accelerometer
-  calculateAngles(accelData, gyroData);
+  // Serial.println("TEST");
+  Serial.print("Accel available: ");
+  Serial.println(IMU.accelerationAvailable() ? "YES" : "NO");
   
-  // Apply filter to roll and pitch angles
-  calculateFilteredAngles(gyroData, accelData);
+  Serial.print("Gyro available: ");
+  Serial.println(IMU.gyroscopeAvailable() ? "YES" : "NO");
+  
+  // delay(1000); // Check every second
+  
+  // if (IMU.accelerationAvailable() && IMU.gyroscopeAvailable()) {
+  //   float ax, ay, az, gx, gy, gz;
+  //   IMU.readAcceleration(ax, ay, az);
+  //   IMU.readGyroscope(gx, gy, gz);
+  //   Serial.print("Raw: ");
+  //   Serial.print(ax); Serial.print(","); 
+  //   Serial.print(ay); Serial.print(",");
+  //   Serial.println(az);
+  //   // Then continue with normal code
+  // }
+  
+  // // Get acceleration data
+  // getAccelData(accelData);
 
-  printSensorData(accelData, gyroData);
+  // // Gyroscope Readings and Complementary Filter
+  // getGyroData(gyroData);
+
+  // // Calculate pitch and roll for gyroscope and accelerometer
+  // calculateAngles(accelData, gyroData);
+  
+  // // Apply filter to roll and pitch angles
+  // calculateFilteredAngles(gyroData, accelData);
+
+  // printSensorData(accelData, gyroData);
 }
