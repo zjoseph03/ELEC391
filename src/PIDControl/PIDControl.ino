@@ -5,6 +5,7 @@
 #include "include/AccelGyro.h"
 #include <ArduinoBLE.h>
 #include "include/VR30_BLE.h"
+#include "include/OLEDDisplay.h"
 
 // Interrupt Includes
 #include <mbed.h>
@@ -16,7 +17,9 @@
 #define LED_KP_DOWN  A1  
 #define LED_KI_UP    A2
 #define LED_KI_DOWN  A3
-#define LED_KD       A4  // This LED will use patterns for up/down
+#define SDA_CLK      A4
+#define SDA_DATA     A5
+#define LED_KD       A6  // This LED will use patterns for up/down
 
 // Non-blocking LED timing
 unsigned long ledOnTime = 0;
@@ -68,7 +71,7 @@ double output = 0;
 float setpoint = 0;  // Target angle (upright position)
 
 mbed::Ticker samplingTicker;
-const float samplingFreq = 99.84; // Sample sensor at 100 Hz (every 10ms). Need to experiment to see what sampling freq we can use
+const int samplingFreq = 99; // Sample sensor at 99.84 Hz (every 10ms). Need to experiment to see what sampling freq we can use
 
 // pidPreviousTime is assumed to be defined in one of your libraries; if not, declare it here:
 unsigned long pidPreviousTime;
@@ -81,6 +84,7 @@ void processBLEPIDFlags();
 
 void setup() {
   Serial.begin(9600);
+  // OLEDSetup();
   // while (!Serial);
   
   if (!IMU.begin()) {

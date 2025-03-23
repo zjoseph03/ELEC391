@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "Arduino_BMI270_BMM150.h"
 
-float k = 0.01;  // Complementary filter coefficient
+float k = 0.95;  // Complementary filter coefficient
 float lastRollFiltered = 0;
 float lastPitchFiltered = 0;
 unsigned long previousTime = 0;
@@ -30,8 +30,8 @@ typedef struct angleData {
   float rollRate;
   float accelRoll;
   float accelPitch;
-  float gyroRoll;
-  float gyroPitch;
+  float gyroRoll = 0;
+  float gyroPitch = 0;
   float rollFiltered;
   float pitchFiltered;
 } angleData_S; 
@@ -58,7 +58,6 @@ void getGyroData() {
 }
 
 void calculateAngles() {
-  // Time step calculation - FIX: Calculate proper delta time
   currentTime = millis();
   dt = (currentTime - previousTime) / 1000.0; // in seconds
   previousTime = currentTime;
@@ -68,12 +67,25 @@ void calculateAngles() {
   angleData.accelPitch = atan2(accelData.ay, sqrt(accelData.ax * accelData.ax + accelData.az * accelData.az)) * 180.0 / PI;
 
   // FIX: Correct gyro rate calculation with proper axis mapping
-  angleData.rollRate = gyroData.gx;  // X-axis for roll rate
+  angleData.rollRate = gyroData.gy;  // X-axis for roll rate
   angleData.pitchRate = gyroData.gy; // Y-axis for pitch rate
+
+  // if (angleData.rollRate > 0.25 && angleData.rollRate < -0.25) {
+  //   angleData.rollRate = angleData.rollRate;
+  // } else {
+  //   angleData.rollRate = 0;
+  // }
   
   // FIX: Proper gyro angle integration
-  angleData.gyroRoll += (angleData.rollRate * dt);
+  angleData.gyroRoll +=  (angleData.rollRate * dt);
   angleData.gyroPitch += (angleData.pitchRate * dt);
+
+  Serial.print("Dt: ");
+  Serial.println(dt);
+  Serial.print("Gyro Gx: ");
+  Serial.println(gyroData.gy);
+  Serial.print("Gyro Roll Angle: ");
+  Serial.println(angleData.gyroRoll);
 }
 
 void calculateFilteredAngles() {
@@ -85,8 +97,15 @@ void calculateFilteredAngles() {
   angleData.pitchFiltered = (k * (lastPitchFiltered + angleData.gyroPitch)) + 
                           ((1-k) * angleData.accelPitch);
 
+  if (angleData.accelRoll < 0.25 && angleData.accelRoll > -0.25) {
+    angleData.rollFiltered = angleData.accelRoll;
+  }
+
   lastRollFiltered = angleData.rollFiltered;
   lastPitchFiltered = angleData.pitchFiltered;
+
+  Serial.print("Filtered Roll: ");
+  Serial.println(angleData.rollFiltered);
 }
 
 // We can split this into two different flags for the accelleromotor and gyroscope if we need to sample at different rates
