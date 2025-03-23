@@ -1,3 +1,16 @@
+// Digital Mapping:
+// Kp+: 00 B3
+// Kp-: 00 B4
+// Left: 00 B5
+// Right: 00 B6
+
+// Kd+: 00 E9
+// Ki+: 00 CD
+// Ki-: 00 EA
+// Kd-: 00 40
+
+
+
 Discovered Attributes:
   Service UUID: 1800
     Characteristic UUID: 2a00 Properties: Read 

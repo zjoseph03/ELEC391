@@ -48,13 +48,13 @@ void getAccelData() {
 }
 
 void getGyroData() {
-  // float gx, gy, gz;
-  // if (IMU.gyroscopeAvailable()) {
-  //   IMU.readGyroscope(gx, gy, gz);
-  //   gyroData.gx = gx;
-  //   gyroData.gy = gy;
-  //   gyroData.gz = gz;
-  // }
+  float gx, gy, gz;
+  if (IMU.gyroscopeAvailable()) {
+    IMU.readGyroscope(gx, gy, gz);
+    gyroData.gx = gx;
+    gyroData.gy = gy;
+    gyroData.gz = gz;
+  }
 }
 
 void calculateAngles() {
@@ -68,19 +68,21 @@ void calculateAngles() {
   angleData.accelPitch = atan2(accelData.ay, sqrt(accelData.ax * accelData.ax + accelData.az * accelData.az)) * 180.0 / PI;
 
   // FIX: Correct gyro rate calculation with proper axis mapping
-  angleData.rollRate = gyroData.gx * dt;  // X-axis for roll rate
-  angleData.pitchRate = gyroData.gy * dt; // Y-axis for pitch rate
+  angleData.rollRate = gyroData.gx;  // X-axis for roll rate
+  angleData.pitchRate = gyroData.gy; // Y-axis for pitch rate
   
   // FIX: Proper gyro angle integration
-  angleData.gyroRoll += angleData.rollRate;
-  angleData.gyroPitch += angleData.pitchRate;
+  angleData.gyroRoll += (angleData.rollRate * dt);
+  angleData.gyroPitch += (angleData.pitchRate * dt);
 }
 
 void calculateFilteredAngles() {
   // Complementary filter
-  angleData.rollFiltered = (k * (lastRollFiltered + (angleData.rollRate * dt))) + 
+  // rollRate is gyro angle rate of change
+  // accelRoll is accelerometer angle
+  angleData.rollFiltered = (k * (lastRollFiltered + angleData.gyroRoll)) + 
                         ((1-k) * angleData.accelRoll);
-  angleData.pitchFiltered = (k * (lastPitchFiltered + angleData.pitchRate)) + 
+  angleData.pitchFiltered = (k * (lastPitchFiltered + angleData.gyroPitch)) + 
                           ((1-k) * angleData.accelPitch);
 
   lastRollFiltered = angleData.rollFiltered;

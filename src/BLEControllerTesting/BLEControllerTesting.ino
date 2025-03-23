@@ -127,9 +127,26 @@ void loop() {
 
   }
 
-
-  // Synchonising motor activity with remote
-  // 
-
+  // Modify PID constants from controller inputs here
   
+
+  if (pidFlags.KpUpFlag == true) {
+    Serial.println("Kp+");
+    pidFlags.KpUpFlag = false;
+  } else if (pidFlags.KiUpFlag == true) {
+    Serial.println("Ki+");
+    pidFlags.KiUpFlag = false;
+  } else if (pidFlags.KdUpFlag == true) {
+    Serial.println("Kd+");
+    pidFlags.KdUpFlag = false;
+  } else if (pidFlags.KpDownFlag == true) {
+    Serial.println("Kp-");
+    pidFlags.KpDownFlag = false;
+  } else if (pidFlags.KiDownFlag == true) {
+    Serial.println("Ki-");
+    pidFlags.KiDownFlag = false;
+  } else if (pidFlags.KdDownFlag == true) {
+    Serial.println("Kd-");
+    pidFlags.KdDownFlag = false;
+  }     
 }
