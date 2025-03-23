@@ -1,4 +1,6 @@
 
+// 7.5 :: 80 :: 0.2
+
 #include <Arduino.h>
 #include "include/AccelGyro.h"
 #include <mbed.h>
@@ -10,7 +12,7 @@
 
 // Low pass filter for sensor readings
 float filteredAngle = 0.0;
-float filterFactor = 0.4;
+float filterFactor = 1.0;
 float filterIncrement = 0.015;
 float filteredDerivitive = 0;
 
@@ -65,8 +67,8 @@ void setup() {
   kpTestStartTime = millis();
 
   Kp = 18.0;    // Less aggressive proportional response
-  Ki = 100.0;    // Start with zero to avoid windup
-  Kd = 1.3;   // Moderate derivative for dampening oscillations
+  Ki = 0.0;    // Start with zero to avoid windup
+  Kd = 0.0;   // Moderate derivative for dampening oscillations
   
   // Kd = kpValues[0];    // Derivative gain
 
@@ -85,7 +87,7 @@ void loop() {
   // Add this at the beginning of your loop
   processSerialInput();
 
-  unsigned long currentTime = millis();
+  unsigned long currentSampleTime = millis();
   // Arrays to store temporary sensor data
   float accelDataTemp[3];
   float gyroDataTemp[3];
@@ -95,12 +97,12 @@ void loop() {
   // if (sampleFlag) {
     // Serial.print("Missed samples: ");
     // Serial.println(missedSamples);
-    currentTime = millis();
+    currentSampleTime = millis();
     // Kd = 0.0;
     // Ki = 0.0;
   
     // Check if it's time to switch to the next Kp value
-    if (currentTime - kpTestStartTime >= kpTestDuration) {
+    if (currentSampleTime - kpTestStartTime >= kpTestDuration) {
       // Move to next Kp value
       currentKpIndex++;
 
@@ -139,12 +141,14 @@ void loop() {
         calculateAngles();
         calculateFilteredAngles();
 
-        unsigned long pidCurrentTime = millis();
-        float dt = (float)(pidCurrentTime - pidPreviousTime) / 1000.0; // Convert ms to seconds
+        // unsigned long pidCurrentTime = millis();
+        // float dt = (float)(pidCurrentTime - pidPreviousTime) / 1000.0; // Convert ms to seconds
         // dt = 0.01;
-        pidPreviousTime = pidCurrentTime;
-        filteredAngle = filterFactor * angleData.rollFiltered + (1 - filterFactor) * filteredAngle;
+        // pidPreviousTime = pidCurrentTime;
         
+        // filteredAngle = filterFactor * angleData.rollFiltered + (1 - filterFactor) * filteredAngle;
+        filteredAngle = angleData.rollFiltered;
+
         // --- PID Control Calculations ---
         // Error is the difference between the desired setpoint (0Â°) and the measured roll angle.
         // pidError = setpoint - angleData.rollFiltered;
@@ -156,7 +160,7 @@ void loop() {
         // Serial.println(pidError);
         // Integrate the pidError over time
         integral += pidError * dt;
-        // integral = constrain(integral, -30, 30);
+        integral = constrain(integral, -15, 15);
         
         // Calculate the derivative (rate of change of pidError)
         derivative = (pidError - previousError) / dt;
@@ -188,7 +192,10 @@ void loop() {
         
         
         // Convert the PID output to a motor speed (constrained to PWM range 0-255)
-        int motorSpeed = constrain(abs(output), 0, 255);
+        int motorSpeed = constrain(abs(output), 33, 255);
+        motorSpeed = 255 - motorSpeed;
+
+        
         
         
         // METHOD 1: USING DEADBAND FOR LINEAR RESPONSE
@@ -215,10 +222,10 @@ void loop() {
         if (output > 0) {
           // Correcting for a tilt that requires forward movement:
           // Activate backward channels to drive the robot forward.
-          analogWrite(2, motorSpeed);
-          analogWrite(3, 0);
-          analogWrite(4, motorSpeed);
-          analogWrite(5, 0);
+          analogWrite(2, 255);
+          analogWrite(3, motorSpeed);
+          analogWrite(4, 255);
+          analogWrite(5, motorSpeed);
 
           
           
@@ -233,10 +240,10 @@ void loop() {
         } else if (output < 0) {
           // Correcting for a tilt that requires backward movement:
           // Activate forward channels to drive the robot backward.
-          analogWrite(2, 0);
-          analogWrite(3, motorSpeed);
-          analogWrite(4, 0);
-          analogWrite(5, motorSpeed);
+          analogWrite(2, motorSpeed);
+          analogWrite(3, 255);
+          analogWrite(4, motorSpeed);
+          analogWrite(5, 255);
 
 
           // pwmController.writePWMDutyCycle(0);
@@ -346,6 +353,8 @@ void processSerialInput() {
     // }
     else if (inputString.equals("s")) {
       // Print current PID values
+      Serial.print("Dt = ");
+      Serial.print(dt, 6);
       Serial.print(", Output=");
       Serial.print(output, 6);
       Serial.print(", Angle=");

@@ -1,12 +1,14 @@
 #include <Arduino.h>
 #include "Arduino_BMI270_BMM150.h"
 
-float k = 0.98;  // Complementary filter coefficient
+float k = 0.01;  // Complementary filter coefficient
 float lastRollFiltered = 0;
 float lastPitchFiltered = 0;
 unsigned long previousTime = 0;
+unsigned long currentTime = 0;
 volatile bool sampleFlag = false;
 int missedSamples = 0;
+float dt;
 
 // Angle Struct for storing all angle data for filtered angles, gyro angles, and accelerometer angles
 typedef struct gyroData {
@@ -46,19 +48,19 @@ void getAccelData() {
 }
 
 void getGyroData() {
-  float gx, gy, gz;
-  if (IMU.gyroscopeAvailable()) {
-    IMU.readGyroscope(gx, gy, gz);
-    gyroData.gx = gx;
-    gyroData.gy = gy;
-    gyroData.gz = gz;
-  }
+  // float gx, gy, gz;
+  // if (IMU.gyroscopeAvailable()) {
+  //   IMU.readGyroscope(gx, gy, gz);
+  //   gyroData.gx = gx;
+  //   gyroData.gy = gy;
+  //   gyroData.gz = gz;
+  // }
 }
 
 void calculateAngles() {
   // Time step calculation - FIX: Calculate proper delta time
-  unsigned long currentTime = millis();
-  float dt = (currentTime - previousTime) / 1000.0; // in seconds
+  currentTime = millis();
+  dt = (currentTime - previousTime) / 1000.0; // in seconds
   previousTime = currentTime;
 
   // Accelerometer-based angles (in degrees) - KEEP THIS PART
@@ -76,7 +78,7 @@ void calculateAngles() {
 
 void calculateFilteredAngles() {
   // Complementary filter
-  angleData.rollFiltered = (k * (lastRollFiltered + angleData.rollRate)) + 
+  angleData.rollFiltered = (k * (lastRollFiltered + (angleData.rollRate * dt))) + 
                         ((1-k) * angleData.accelRoll);
   angleData.pitchFiltered = (k * (lastPitchFiltered + angleData.pitchRate)) + 
                           ((1-k) * angleData.accelPitch);
