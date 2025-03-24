@@ -34,6 +34,7 @@ struct PIDFlags {
   bool KpDownFlag = false;
   bool KiDownFlag = false;
   bool KdDownFlag = false;
+  bool balance = false;
 } pidFlags;
 
 
@@ -117,6 +118,9 @@ public:
               break;
             case 0x40:
               pidFlags.KdDownFlag = true;
+              break;
+            case 0x00:
+              pidFlags.balance = true;
               break;
             default:
               break;

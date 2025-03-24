@@ -74,12 +74,12 @@ double output = 0;
 
 mbed::Ticker samplingTicker;
 const int samplingFreq = 99; // Sample sensor at 99.84 Hz (every 10ms). Need to experiment to see what sampling freq we can use
-const float setpoint = 0;  // Target angle (upright position)
+float setPoint = 0;  // Target angle (upright position)
 
 void updateMotorsBLE();
 void processSerialInput();
 void BLEConnect();
-void processBLEPIDFlags();
+void processBLEControlFlags();
 
 
 void setup() {
@@ -160,7 +160,7 @@ void loop() {
 
     calculateAngles();
     calculateFilteredAngles();
-    processBLEPIDFlags();
+    processBLEControlFlags();
 
     if (ledActive && (millis() - ledOnTime > LED_FLASH_DURATION)) {
       digitalWrite(LED_KP_UP, LOW);
@@ -169,6 +169,7 @@ void loop() {
       digitalWrite(LED_KI_DOWN, LOW);
       digitalWrite(LED_KD, LOW);
       ledActive = false;
+    }
 
     
       // filteredAngle = filterFactor * angleData.rollFiltered + (1 - filterFactor) * filteredAngle;
@@ -277,7 +278,6 @@ void loop() {
       // pwmController2.writePWMDutyCycle(0);
       // pwmController3.writePWMDutyCycle(0);
       // pwmController4.writePWMDutyCycle(0);
-      }
     }
   }
 }
@@ -320,13 +320,14 @@ void updateMotorsBLE() {
   }
 }
 
-void processBLEPIDFlags() {
+void processBLEControlFlags() {
   // Process PID flags
   if (pidFlags.KpUpFlag) {
-    Kp += kpIncrement;
-    Serial.print("Kp+ : ");
-    Serial.println(Kp);
+    // Kp += kpIncrement;
+    Serial.println("Forward");
+    // Serial.println(Kp);
     pidFlags.KpUpFlag = false;
+    setPoint = 2.0;
     
     // Flash Kp UP LED
     digitalWrite(LED_KP_UP, HIGH);
@@ -335,9 +336,10 @@ void processBLEPIDFlags() {
   }
   
   if (pidFlags.KpDownFlag) {
-    Kp -= kpIncrement;
-    Serial.print("Kp- : ");
-    Serial.println(Kp);
+    // Kp -= kpIncrement;
+    Serial.println("Backward");
+    // Serial.println(Kp);
+    setPoint = -2.0;
     pidFlags.KpDownFlag = false;
     
     // Flash Kp DOWN LED
@@ -345,53 +347,62 @@ void processBLEPIDFlags() {
     ledOnTime = millis();
     ledActive = true;
   }
-  if (pidFlags.KiUpFlag) {
-    Ki += kiIncrement;
-    Serial.print("Ki+ : ");
-    Serial.println(Ki);
-    pidFlags.KiUpFlag = false;
-    
-    // Flash Ki UP LED
+  if (pidFlags.balance) {
+    Serial.println("Balance Mode");
+    setPoint = 0;
+    pidFlags.balance = false;
     digitalWrite(LED_KI_UP, HIGH);
     ledOnTime = millis();
     ledActive = true;
   }
-  
-  if (pidFlags.KiDownFlag) {
-    Ki -= kiIncrement;
-    Serial.print("Ki- : ");
-    Serial.println(Ki);
-    pidFlags.KiDownFlag = false;
+  // if (pidFlags.KiUpFlag) {
+  //   Ki += kiIncrement;
+  //   Serial.print("Ki+ : ");
+  //   Serial.println(Ki);
+  //   pidFlags.KiUpFlag = false;
+  //   // setPoint = 0.5;
     
-    // Flash Ki DOWN LED
-    digitalWrite(LED_KI_DOWN, HIGH);
-    ledOnTime = millis();
-    ledActive = true;
-  }
+  //   // Flash Ki UP LED
+  //   digitalWrite(LED_KI_UP, HIGH);
+  //   ledOnTime = millis();
+  //   ledActive = true;
+  // }
+  
+  // if (pidFlags.KiDownFlag) {
+  //   Ki -= kiIncrement;
+  //   Serial.print("Ki- : ");
+  //   Serial.println(Ki);
+  //   pidFlags.KiDownFlag = false;
+    
+  //   // Flash Ki DOWN LED
+  //   digitalWrite(LED_KI_DOWN, HIGH);
+  //   ledOnTime = millis();
+  //   ledActive = true;
+  // }
 
-  if (pidFlags.KdUpFlag) {
-    Kd += kdIncrement;
-    Serial.print("Kd+ : ");
-    Serial.println(Kd);
-    pidFlags.KdUpFlag = false;
+  // if (pidFlags.KdUpFlag) {
+  //   Kd += kdIncrement;
+  //   Serial.print("Kd+ : ");
+  //   Serial.println(Kd);
+  //   pidFlags.KdUpFlag = false;
     
-    // Flash Kd LED once for UP
-    digitalWrite(LED_KD, HIGH);
-    ledOnTime = millis();
-    ledActive = true;
-  }
+  //   // Flash Kd LED once for UP
+  //   digitalWrite(LED_KD, HIGH);
+  //   ledOnTime = millis();
+  //   ledActive = true;
+  // }
   
-  if (pidFlags.KdDownFlag) {
-    Kd -= kdIncrement;
-    Serial.print("Kd- : ");
-    Serial.println(Kd);
-    pidFlags.KdDownFlag = false;
+  // if (pidFlags.KdDownFlag) {
+  //   Kd -= kdIncrement;
+  //   Serial.print("Kd- : ");
+  //   Serial.println(Kd);
+  //   pidFlags.KdDownFlag = false;
     
-    // Flash Kd LED twice for DOWN (handled with a pattern)
-    digitalWrite(LED_KD, HIGH);
-    ledOnTime = millis();
-    ledActive = true;
-  }
+  //   // Flash Kd LED twice for DOWN (handled with a pattern)
+  //   digitalWrite(LED_KD, HIGH);
+  //   ledOnTime = millis();
+  //   ledActive = true;
+  // }
 }
 
 // DEPRECATED

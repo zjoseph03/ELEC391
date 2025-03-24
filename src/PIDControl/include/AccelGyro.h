@@ -9,6 +9,8 @@ unsigned long currentTime = 0;
 volatile bool sampleFlag = false;
 int missedSamples = 0;
 float dt;
+float setpoint = 0;  // Target angle (upright position)
+
 
 // Angle Struct for storing all angle data for filtered angles, gyro angles, and accelerometer angles
 typedef struct gyroData {
