@@ -1,6 +1,10 @@
 
 // 7.5 :: 80 :: 0.2
 
+// Kp = 11
+// Kd = 0.9
+// Ki = 50
+
 #include <Arduino.h>
 #include "include/AccelGyro.h"
 #include <ArduinoBLE.h>
@@ -130,9 +134,9 @@ void setup() {
   Kp = kpValues[currentKpIndex];
   kpTestStartTime = millis();
 
-  Kp = 18.0;    // Less aggressive proportional response
-  Ki = 0.0;    // Start with zero to avoid windup
-  Kd = 0.0;   // Moderate derivative for dampening oscillations
+  Kp = 8.0;    // Less aggressive proportional response
+  Kd = 0.9;    // Start with zero to avoid windup
+  Ki = 65.0;   // Moderate derivative for dampening oscillations
   
   // Kd = kpValues[0];    // Derivative gain
 

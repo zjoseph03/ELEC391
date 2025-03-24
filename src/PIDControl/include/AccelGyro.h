@@ -44,7 +44,7 @@ void getAccelData() {
     accelData.ax = ax / 8192.0;
     accelData.ay = ay / 8192.0;
     accelData.az = az / 8192.0;
-  }
+  } 
 }
 
 void getGyroData() {
@@ -52,7 +52,7 @@ void getGyroData() {
   if (IMU.gyroscopeAvailable()) {
     IMU.readGyroscope(gx, gy, gz);
     gyroData.gx = gx;
-    gyroData.gy = gy;
+    gyroData.gy = (gy / 17.2);
     gyroData.gz = gz;
   }
 }
@@ -77,8 +77,8 @@ void calculateAngles() {
   // }
   
   // FIX: Proper gyro angle integration
-  angleData.gyroRoll +=  (angleData.rollRate * dt);
-  angleData.gyroPitch += (angleData.pitchRate * dt);
+  angleData.gyroRoll =  (angleData.rollRate * dt);
+  angleData.gyroPitch = (angleData.pitchRate * dt);
 
   Serial.print("Dt: ");
   Serial.println(dt);
@@ -92,14 +92,15 @@ void calculateFilteredAngles() {
   // Complementary filter
   // rollRate is gyro angle rate of change
   // accelRoll is accelerometer angle
+  // if (angleData.accelRoll < 0.15 && angleData.accelRoll > -0.15) {
+  //   angleData.gyroRoll = angleData.accelRoll;
+  //   lastRollFiltered = angleData.accelRoll;
+  // }
+  
   angleData.rollFiltered = (k * (lastRollFiltered + angleData.gyroRoll)) + 
                         ((1-k) * angleData.accelRoll);
   angleData.pitchFiltered = (k * (lastPitchFiltered + angleData.gyroPitch)) + 
                           ((1-k) * angleData.accelPitch);
-
-  if (angleData.accelRoll < 0.25 && angleData.accelRoll > -0.25) {
-    angleData.rollFiltered = angleData.accelRoll;
-  }
 
   lastRollFiltered = angleData.rollFiltered;
   lastPitchFiltered = angleData.pitchFiltered;
