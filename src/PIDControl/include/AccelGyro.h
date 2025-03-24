@@ -47,13 +47,14 @@ void getAccelData() {
   } 
 }
 
+// FIX: Find precise scaling factor for the gyroscope data
 void getGyroData() {
   float gx, gy, gz;
   if (IMU.gyroscopeAvailable()) {
     IMU.readGyroscope(gx, gy, gz);
-    gyroData.gx = gx;
+    gyroData.gx = (gx / 17.2);
     gyroData.gy = (gy / 17.2);
-    gyroData.gz = gz;
+    gyroData.gz = (gz / 17.2);
   }
 }
 
@@ -66,32 +67,22 @@ void calculateAngles() {
   angleData.accelRoll = atan2(-accelData.ax, sqrt(accelData.ay * accelData.ay + accelData.az * accelData.az)) * 180.0 / PI;
   angleData.accelPitch = atan2(accelData.ay, sqrt(accelData.ax * accelData.ax + accelData.az * accelData.az)) * 180.0 / PI;
 
-  // FIX: Correct gyro rate calculation with proper axis mapping
   angleData.rollRate = gyroData.gy;  // X-axis for roll rate
-  angleData.pitchRate = gyroData.gy; // Y-axis for pitch rate
-
-  // if (angleData.rollRate > 0.25 && angleData.rollRate < -0.25) {
-  //   angleData.rollRate = angleData.rollRate;
-  // } else {
-  //   angleData.rollRate = 0;
-  // }
+  angleData.pitchRate = gyroData.gz; // Y-axis for pitch rate
   
-  // FIX: Proper gyro angle integration
   angleData.gyroRoll =  (angleData.rollRate * dt);
   angleData.gyroPitch = (angleData.pitchRate * dt);
 
-  Serial.print("Dt: ");
-  Serial.println(dt);
-  Serial.print("Gyro Gx: ");
-  Serial.println(gyroData.gy);
-  Serial.print("Gyro Roll Angle: ");
-  Serial.println(angleData.gyroRoll);
+  // Serial.print("Dt: ");
+  // Serial.println(dt);
+  // Serial.print("Gyro Gy: ");
+  // Serial.println(gyroData.gy);
+  // Serial.print("Gyro Roll Angle: ");
+  // Serial.println(angleData.gyroRoll);
 }
 
 void calculateFilteredAngles() {
-  // Complementary filter
-  // rollRate is gyro angle rate of change
-  // accelRoll is accelerometer angle
+  // Gyroscope drift correction at small angles
   // if (angleData.accelRoll < 0.15 && angleData.accelRoll > -0.15) {
   //   angleData.gyroRoll = angleData.accelRoll;
   //   lastRollFiltered = angleData.accelRoll;
@@ -105,8 +96,8 @@ void calculateFilteredAngles() {
   lastRollFiltered = angleData.rollFiltered;
   lastPitchFiltered = angleData.pitchFiltered;
 
-  Serial.print("Filtered Roll: ");
-  Serial.println(angleData.rollFiltered);
+  // Serial.print("Filtered Roll: ");
+  // Serial.println(angleData.rollFiltered);
 }
 
 // We can split this into two different flags for the accelleromotor and gyroscope if we need to sample at different rates
