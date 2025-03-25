@@ -81,11 +81,11 @@ void processSerialInput();
 void BLEConnect();
 void processBLEControlFlags();
 
-
 void setup() {
   Serial.begin(9600);
-  // OLEDSetup();
-  // while (!Serial);
+  
+  initOLED();             // Initialize the OLED display
+  displayTestMessage();
   
   if (!IMU.begin()) {
     while (1);  // Stop if IMU initialization fails
