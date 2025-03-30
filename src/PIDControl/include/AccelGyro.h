@@ -37,6 +37,16 @@ typedef struct angleData {
 } angleData_S; 
 angleData_S angleData;
 
+typedef struct turningData {
+  bool turningLeft = false;
+  bool turningRight = false;
+  float leftScaler = 1.0;
+  float rightScaler = 1.0;
+  float rightMotorSpeed = 0.0;
+  float leftMotorSpeed = 0.0;
+} turningData_S;
+turningData_S turningData;
+
 void getAccelData() {
   float ax, ay, az;
   if (IMU.accelerationAvailable()) {
@@ -80,12 +90,12 @@ void calculateAngles() {
   angleData.gyroRoll =  (angleData.rollRate * dt);
   angleData.gyroPitch = (angleData.pitchRate * dt);
 
-  Serial.print("Dt: ");
-  Serial.println(dt);
-  Serial.print("Gyro Gx: ");
-  Serial.println(gyroData.gy);
-  Serial.print("Gyro Roll Angle: ");
-  Serial.println(angleData.gyroRoll);
+  // Serial.print("Dt: ");
+  // Serial.println(dt);
+  // Serial.print("Gyro Gx: ");
+  // Serial.println(gyroData.gy);
+  // Serial.print("Gyro Roll Angle: ");
+  // Serial.println(angleData.gyroRoll);
 }
 
 void calculateFilteredAngles() {
@@ -105,8 +115,8 @@ void calculateFilteredAngles() {
   lastRollFiltered = angleData.rollFiltered;
   lastPitchFiltered = angleData.pitchFiltered;
 
-  Serial.print("Filtered Roll: ");
-  Serial.println(angleData.rollFiltered);
+  // Serial.print("Filtered Roll: ");
+  // Serial.println(angleData.rollFiltered);
 }
 
 // We can split this into two different flags for the accelleromotor and gyroscope if we need to sample at different rates

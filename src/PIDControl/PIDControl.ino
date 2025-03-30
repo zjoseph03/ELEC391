@@ -25,10 +25,12 @@
 #define SDA_DATA     A5
 #define LED_KD       A6  // This LED will use patterns for up/down
 
-// Non-blocking LED timing
+// Non-blocking LED timing TODO: get rid of these
 unsigned long ledOnTime = 0;
 const unsigned long LED_FLASH_DURATION = 200;  // 200ms flash duration
 bool ledActive = false;
+unsigned long lastDisplayUpdateTime = 0;
+const unsigned long DISPLAY_UPDATE_INTERVAL = 200; // Update at 5Hz
 
 // #include "include/ELEC391PWM.h"
 // PWMController pwmController(2); // motor 1 forward
@@ -40,55 +42,43 @@ bool ledActive = false;
 BLEController controllerInstance;
 BLEController* BLEController::VR30Controller = nullptr;
 
-// Low pass filter for sensor readings
-float filteredAngle = 0.0;
-float filterFactor = 1.0;
-float filterIncrement = 0.015;
-float filteredDerivitive = 0;
-
-// Code for keyboard input to change kp
-// Add these variables at the top with your other global variables
-const float kpIncrement = 1.0;  // Amount to change Kp with each keypress
+// Debug code for incrementing constants on the fly
+const float kpIncrement = 1.0;
 const float kiIncrement = 5.0;
 const float kdIncrement = 0.05;
 
-// Motor deadband scaling
-const int MOTOR_DEADBAND = 60;  // Minimum PWM before motors move
-const float OUTPUT_SCALING = 1.0;  // Scale down the PID output
-
+// Serial input variables 
 bool serialCommandReady = false;
 String inputString = "";
 
 // PID tuning constants
-double kpValues[] = {13, 15,17,20};
-int currentKpIndex = 0; 
-unsigned long kpTestStartTime;
-const unsigned long kpTestDuration = 20000;
-double Kp = 1.2;   // Proportional gain
-float Ki = 6.15;    // Integral gain
-float Kd = 0.0585;    // Derivative gain
-float angle;
+float Kp = 7.0;    // Less aggressive proportional response
+float Kd = 0.4;    // Start with zero to avoid windup
+float Ki = 115.0;   // Moderate derivative for dampening oscillations
+
+// Used to update the OLED display
+float prevKi;
+float prevKp;
+float prevKd;
+
 // PID variables
 double pidError = 0, previousError = 0;
 float integral = 0, derivative = 0;
 double output = 0;
-float setpoint = 0;  // Target angle (upright position)
 
 mbed::Ticker samplingTicker;
 const int samplingFreq = 99; // Sample sensor at 99.84 Hz (every 10ms). Need to experiment to see what sampling freq we can use
-
-// pidPreviousTime is assumed to be defined in one of your libraries; if not, declare it here:
-unsigned long pidPreviousTime;
+float setPoint = 0;  // Target angle (upright position)
 
 void updateMotorsBLE();
 void processSerialInput();
 void BLEConnect();
-void processBLEPIDFlags();
-
+void processBLEControlFlags();
 
 void setup() {
   Serial.begin(9600);
-  // OLEDSetup();
+  initOLED();
+  displayPIDValues(Kp, Ki, Kd);
   // while (!Serial);
   
   if (!IMU.begin()) {
@@ -109,6 +99,7 @@ void setup() {
   }
   Serial.println("BLE.begin() OK");
   
+  // Initialize PWM pins for motor control
   pinMode(2, OUTPUT);
   pinMode(3, OUTPUT);
   pinMode(4, OUTPUT);
@@ -130,24 +121,16 @@ void setup() {
   digitalWrite(LED_KI_DOWN, LOW);
   digitalWrite(LED_KD, LOW);
 
-  pidPreviousTime = millis();
-  Kp = kpValues[currentKpIndex];
-  kpTestStartTime = millis();
-
-  Kp = 8.0;    // Less aggressive proportional response
-  Kd = 0.9;    // Start with zero to avoid windup
-  Ki = 65.0;   // Moderate derivative for dampening oscillations
-  
-  // Kd = kpValues[0];    // Derivative gain
-
-  // Serial.print("Starting test with Kp = ");
-  // Serial.println(Kp);
+  Kp = 7.0;    // Less aggressive proportional response
+  Kd = 0.4;    // Start with zero to avoid windup
+  Ki = 115.0;   // Moderate derivative for dampening oscillations
   
   // Set PWM frequency to 500Hz for all motor controllers
   // pwmController.setFrequency(500);
   // pwmController2.setFrequency(500);
   // pwmController3.setFrequency(500);
   // pwmController4.setFrequency(500);
+  
   BLEController::VR30Controller = &controllerInstance;
   BLE.scan(false);
   samplingTicker.attach(mbed::callback(sampleSensors), std::chrono::milliseconds(1000 / samplingFreq));
@@ -164,17 +147,25 @@ void loop() {
   float gyroDataTemp[3];
   float dutyCycle;
   float dutyCycleBackwards;
+
+  // Every 200ms check any flags that were set to update the display
+  if (millis() - lastDisplayUpdateTime > DISPLAY_UPDATE_INTERVAL) {
+    if (Kp != prevKp || Ki != prevKi || Kd != prevKd) {
+    displayPIDValues(Kp, Ki, Kd);
+    lastDisplayUpdateTime = millis();
+    prevKd = Kd;
+    prevKi = Ki;
+    prevKp = Kp;
+  }
     
-  // Kp = 8.0;   // Proportional gain
   if (sampleFlag && BLEController::VR30Controller->controllerConnected) {
     sampleFlag = false;
-    // dt = 0.01;
     getAccelData();
     getGyroData();
 
     calculateAngles();
     calculateFilteredAngles();
-    processBLEPIDFlags();
+    processBLEControlFlags();
 
     if (ledActive && (millis() - ledOnTime > LED_FLASH_DURATION)) {
       digitalWrite(LED_KP_UP, LOW);
@@ -184,94 +175,51 @@ void loop() {
       digitalWrite(LED_KD, LOW);
       ledActive = false;
     }
-
-    // unsigned long pidCurrentTime = millis();
-    // float dt = (float)(pidCurrentTime - pidPreviousTime) / 1000.0; // Convert ms to seconds
-    // dt = 0.01;
-    // pidPreviousTime = pidCurrentTime;
     
-    // filteredAngle = filterFactor * angleData.rollFiltered + (1 - filterFactor) * filteredAngle;
-    filteredAngle = angleData.rollFiltered;
-    // Serial.print("Filtered Angle: ");
-    // Serial.println(filteredAngle);
-
     // --- PID Control Calculations ---
     // Error is the difference between the desired setpoint (0Â°) and the measured roll angle.
-    // pidError = setpoint - angleData.rollFiltered;
-    pidError = setpoint - filteredAngle;
+    pidError = setPoint - angleData.rollFiltered;
     
-    // Serial.print("PID Angle: ");
-    // Serial.println(angleData.rollFiltered);
-    // Serial.print("PID ERROR: ");
-    // Serial.println(pidError);
     // Integrate the pidError over time
     integral += pidError * dt;
-    integral = constrain(integral, -15, 15);
     
     // Calculate the derivative (rate of change of pidError)
     derivative = (pidError - previousError) / dt;
-    // filteredDerivitive = (filterFactor * derivative) + ((1 - filterFactor) * filteredDerivitive);
-    // filteredDerivitive = derivative;
 
     // Compute the PID output
-    output = (Kp * pidError) + (Ki * integral) + (Kd * filteredDerivitive);
+    output = (Kp * pidError) + (Ki * integral) + (Kd * derivative);
     previousError = pidError;
-    
-    // // Debug print of the PID output
-    // Serial.print("Kp: ");
-    // Serial.println(Kp, 6);
-    // Serial.print("PID ERROR: ");
-    // Serial.println(pidError, 6);
-    // Serial.print("PID INTEGRAL: ");
-    // Serial.println(integral, 6);
-    // Serial.print("PID DERIVITIVE: ");
-    // Serial.println(derivative, 6);
-    // // Serial.print("Kp=");
-    // // Serial.print(Kp, 6);
-    // Serial.print(", Output=");
-    // Serial.print(output, 6);
-    // Serial.print(", Angle=");
-    // Serial.println(angleData.rollFiltered, 6);
-    // Serial.println();
-    // Serial.println();
-    // Serial.println();
-    
     
     // Convert the PID output to a motor speed (constrained to PWM range 0-255)
     int motorSpeed = constrain(abs(output), 0, 255);
     motorSpeed = 255 - motorSpeed;
 
-    
-    
-    
-    // METHOD 1: USING DEADBAND FOR LINEAR RESPONSE
-    // int rawMotorSpeed = abs(output) * OUTPUT_SCALING;
-    // int motorSpeed = (rawMotorSpeed < MOTOR_DEADBAND) ? 0 : constrain(rawMotorSpeed, MOTOR_DEADBAND, 255);
+    if (turningData.turningRight) {
+      turningData.rightScaler = 30;
+      turningData.leftScaler = -50;
+    } else if (turningData.turningLeft) {
+      turningData.rightScaler = -50;
+      turningData.leftScaler = 30;
+    } else {
+      turningData.rightScaler = 0.0;
+      turningData.leftScaler = 0.0;
+    }
 
+    printPIDData(false);
 
-    // METHOD 2: Apply exponential curve for more gentle response at small angles
-    // float outputScaled = output * OUTPUT_SCALING;
-    // int motorSpeed = 0;
-    // if (abs(outputScaled) > MOTOR_DEADBAND) {
-    //     // Exponential mapping (gentler at small values)
-    //     motorSpeed = constrain(
-    //         MOTOR_DEADBAND + (255 - MOTOR_DEADBAND) * pow(abs(outputScaled)/255.0, 1.5), 
-    //         0, 255);
-    // }
-
-    // motorSpeed = ((double)motorSpeed * 100.0) / 255.0; // Convert to percentage
-    // Serial.print("Output: ");
-    // Serial.println(output);
     // --- Motor Control Based on PID Output ---
     // If the output is positive, drive one set of PWM channels;
     // if negative, drive the opposite channels.
+    turningData.rightMotorSpeed = constrain(motorSpeed + turningData.rightScaler, 0, 255);
+    turningData.leftMotorSpeed = constrain(motorSpeed + turningData.leftScaler, 0, 255);
+
     if (output > 0) {
       // Correcting for a tilt that requires forward movement:
       // Activate backward channels to drive the robot forward.
       analogWrite(2, 255);
-      analogWrite(3, motorSpeed);
+      analogWrite(3, turningData.rightMotorSpeed);
       analogWrite(4, 255);
-      analogWrite(5, motorSpeed);
+      analogWrite(5, turningData.leftMotorSpeed);
 
       
       
@@ -286,9 +234,9 @@ void loop() {
     } else if (output < 0) {
       // Correcting for a tilt that requires backward movement:
       // Activate forward channels to drive the robot backward.
-      analogWrite(2, motorSpeed);
+      analogWrite(2, turningData.rightMotorSpeed);
       analogWrite(3, 255);
-      analogWrite(4, motorSpeed);
+      analogWrite(4, turningData.leftMotorSpeed);
       analogWrite(5, 255);
 
 
@@ -300,12 +248,12 @@ void loop() {
       // Serial.println("Moving Backward (Correcting Tilt)");
       // Serial.print("Motor Speed: ");
       // Serial.println(motorSpeed);
-    } else {
-      // If PID output is zero, stop the motors.
-      analogWrite(2, 0);
-      analogWrite(3, 0);
-      analogWrite(4, 0);
-      analogWrite(5, 0);
+      } else {
+        // If PID output is zero, stop the motors.
+        analogWrite(2, 0);
+        analogWrite(3, 0);
+        analogWrite(4, 0);
+        analogWrite(5, 0);
 
       // pwmController.writePWMDutyCycle(0);
       // pwmController2.writePWMDutyCycle(0);
@@ -313,10 +261,12 @@ void loop() {
       // pwmController4.writePWMDutyCycle(0);
       
       // Serial.println("No Movement (Balanced)");
+      }
     }
   }
 }
 
+// TODO: Add code to handle BLE disconnects cleanly and to not start accumulating data until desired start
 void BLEConnect() {
   if (BLEController::VR30Controller && !BLEController::VR30Controller->controllerConnected) {
     // Serial.print("In loop\n");
@@ -355,13 +305,17 @@ void updateMotorsBLE() {
   }
 }
 
-void processBLEPIDFlags() {
+// Function used to process flags triggered by BLE inputs
+// NOTE: this is also used for on the fly PID tuning at the moment
+void processBLEControlFlags() {
   // Process PID flags
-  if (pidFlags.KpUpFlag) {
-    Kp += kpIncrement;
-    Serial.print("Kp+ : ");
-    Serial.println(Kp);
-    pidFlags.KpUpFlag = false;
+  if (pidFlags.forward) {
+    // Kp += kpIncrement;
+    setPoint = 3.0;
+    // Ki = 40;
+    // Serial.println("Forward");
+    // Serial.println(setPoint);
+    pidFlags.forward = false;
     
     // Flash Kp UP LED
     digitalWrite(LED_KP_UP, HIGH);
@@ -369,22 +323,37 @@ void processBLEPIDFlags() {
     ledActive = true;
   }
   
-  if (pidFlags.KpDownFlag) {
-    Kp -= kpIncrement;
-    Serial.print("Kp- : ");
-    Serial.println(Kp);
-    pidFlags.KpDownFlag = false;
+  if (pidFlags.backward) {
+    // Kp -= kpIncrement;
+    setPoint = -3.0;
+    // Ki = 40;
+    // Serial.println("Backward");
+    // Serial.println(setPoint);
+    pidFlags.backward = false;
     
     // Flash Kp DOWN LED
     digitalWrite(LED_KP_DOWN, HIGH);
     ledOnTime = millis();
     ledActive = true;
   }
-  if (pidFlags.KiUpFlag) {
-    Ki += kiIncrement;
-    Serial.print("Ki+ : ");
-    Serial.println(Ki);
-    pidFlags.KiUpFlag = false;
+  if (pidFlags.balance) {
+    Serial.println("Balance Mode");
+    setPoint = 0;
+    pidFlags.balance = false;
+    turningData.turningLeft = false;
+    turningData.turningRight = false;
+
+    // Ki = 50;
+    digitalWrite(LED_KI_UP, HIGH);
+    ledOnTime = millis();
+    ledActive = true;
+  }
+  if (pidFlags.x) {
+    Kp += kpIncrement;
+    Serial.print("Kp+ : ");
+    Serial.println(Kp);
+    pidFlags.x = false;
+    // setPoint = 0.5;
     
     // Flash Ki UP LED
     digitalWrite(LED_KI_UP, HIGH);
@@ -392,11 +361,11 @@ void processBLEPIDFlags() {
     ledActive = true;
   }
   
-  if (pidFlags.KiDownFlag) {
-    Ki -= kiIncrement;
-    Serial.print("Ki- : ");
-    Serial.println(Ki);
-    pidFlags.KiDownFlag = false;
+  if (pidFlags.b) {
+    Kp -= kpIncrement;
+    Serial.print("Kp- : ");
+    Serial.println(Kp);
+    pidFlags.b = false;
     
     // Flash Ki DOWN LED
     digitalWrite(LED_KI_DOWN, HIGH);
@@ -427,6 +396,35 @@ void processBLEPIDFlags() {
     ledOnTime = millis();
     ledActive = true;
   }
+
+  // Turn left
+  if (pidFlags.left) {
+    // Ki += kiIncrement;
+    // Serial.print("Ki- : ");
+    // Serial.println(Ki);
+    pidFlags.left = false;
+    turningData.turningLeft = true;
+    
+
+    // Flash Kd LED twice for DOWN (handled with a pattern)
+    digitalWrite(LED_KD, HIGH);
+    ledOnTime = millis();
+    ledActive = true;
+  }
+
+  // Turn right
+  if (pidFlags.right) {
+    // Ki -= kiIncrement;
+    // Serial.println(Ki);
+
+    pidFlags.right = false;
+    turningData.turningRight = true;
+    
+    // Flash Kd LED twice for DOWN (handled with a pattern)
+    digitalWrite(LED_KD, HIGH);
+    ledOnTime = millis();
+    ledActive = true;
+  }
 }
 
 void processSerialInput() {
@@ -435,16 +433,10 @@ void processSerialInput() {
 
     char inChar = (char)Serial.read();
     
-    // Serial.print("Received char code: ");
-    // Serial.println((int)inChar);
-
-    // if (inChar == '\n' || inChar == '\r') {
     serialCommandReady = true;
-    // } else {
-      // Add character to input string
+
     inputString += inChar;
     Serial.println(inputString);
-    // }
   }
   
   if (serialCommandReady) {
@@ -500,9 +492,7 @@ void processSerialInput() {
       Serial.print(", Output=");
       Serial.print(output, 6);
       Serial.print(", Angle=");
-      Serial.print(filteredAngle, 6);
-      Serial.print(", Filter=");
-      Serial.println(filterFactor, 6);
+      Serial.println(angleData.rollFiltered, 6);
       Serial.print("Kp=");
       Serial.print(Kp, 6);
       Serial.print(", Ki=");
@@ -518,4 +508,31 @@ void processSerialInput() {
     inputString = "";
     serialCommandReady = false;
   }
+}
+
+float printPIDData(bool printData) {
+    // Debug print of the PID output
+    if (printData) {
+      Serial.print("Kp: ");
+      Serial.println(Kp, 6);
+      Serial.print("Ki: ");
+      Serial.println(Ki, 6);
+      Serial.print("Kd: ");
+      Serial.println(Kd, 6);
+      Serial.print("PID ERROR: ");
+      Serial.println(pidError, 6);
+      Serial.print("PID INTEGRAL: ");
+      Serial.println(integral, 6);
+      Serial.print("PID DERIVITIVE: ");
+      Serial.println(derivative, 6);
+      Serial.print("Setpoint: ");
+      Serial.println(setPoint, 6);
+      Serial.print(", Output=");
+      Serial.print(output, 6);
+      Serial.print(", Angle=");
+      Serial.println(angleData.rollFiltered, 6);
+      Serial.println();
+      Serial.println();
+      Serial.println();
+    }
 }
