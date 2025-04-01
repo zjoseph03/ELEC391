@@ -2,7 +2,7 @@
 #include <ArduinoBLE.h>
 
 // NOTE: Controller uses MAC randomization so we can't use this to automatically pair with just our controller
-const char* targetMacAddress = "DC53106DB062";
+// const char* targetMacAddress = "DC53106DB062";
 
 static const String HID_SERVICE_alt("1812");
 static const String HID_SERVICE("1812");
@@ -27,13 +27,16 @@ typedef struct __attribute__((__packed__)) {
   uint8_t powerSelect;
 } vr_30_mouse;
 
+// TODO: Label KdUpFlag and KdDownFlag correactly with the actual button labels
 struct PIDFlags {
-  bool KpUpFlag = false;
-  bool KiUpFlag = false;
+  bool forward = false;
+  bool x = false;
   bool KdUpFlag = false;
-  bool KpDownFlag = false;
-  bool KiDownFlag = false;
+  bool backward = false;
+  bool b = false;
   bool KdDownFlag = false;
+  bool left = false;
+  bool right = false;
   bool balance = false;
 } pidFlags;
 
@@ -102,22 +105,28 @@ public:
           // Add code here for Ki Flags.
           switch(joy_mouse->buttons) {
             case 0xB3:
-              pidFlags.KpUpFlag = true;
+              pidFlags.forward = true;
               break;
             case 0xCD:
-              pidFlags.KiUpFlag = true;
+              pidFlags.x = true;
               break;
             case 0xE9:
               pidFlags.KdUpFlag = true;
               break;
             case 0xB4:
-              pidFlags.KpDownFlag = true;
+              pidFlags.backward = true;
               break;
             case 0xEA:
-              pidFlags.KiDownFlag = true;
+              pidFlags.b = true;
               break;
             case 0x40:
               pidFlags.KdDownFlag = true;
+              break;
+            case 0xB5:
+              pidFlags.left = true;
+              break;
+            case 0xB6:
+              pidFlags.right = true;
               break;
             case 0x00:
               pidFlags.balance = true;
@@ -139,7 +148,7 @@ public:
     // check if a peripheral has been discovered
     BLE.scanForName("MOCUTE-052Fe-AUTO", true);
     peripheral = BLE.available();
-    Serial.print("Searching\n");
+    // Serial.print("Searching\n");
     Serial.println(peripheral.localName());
     if (peripheral && peripheral.localName() == "MOCUTE-052Fe-AUTO") {
         // discovered a peripheral, print out address, local name, and advertised service

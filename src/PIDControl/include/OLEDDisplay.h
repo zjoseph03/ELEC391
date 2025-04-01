@@ -35,4 +35,27 @@ void displayTestMessage() {
   display.display();
 }
 
+void displayPIDValues(float kp, float ki, float kd) {
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+  
+  // Display Kp
+  display.setCursor(0, 10);
+  display.print("Kp: ");
+  display.print(kp, 3);  // 3 decimal places
+  
+  // Display Ki
+  display.setCursor(0, 25);
+  display.print("Ki: ");
+  display.print(ki, 3);  // 3 decimal places
+  
+  // Display Kd
+  display.setCursor(0, 40);
+  display.print("Kd: ");
+  display.print(kd, 3);  // 3 decimal places
+  
+  display.display();
+}
+
 #endif

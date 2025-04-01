@@ -39,6 +39,16 @@ typedef struct angleData {
 } angleData_S; 
 angleData_S angleData;
 
+typedef struct turningData {
+  bool turningLeft = false;
+  bool turningRight = false;
+  float leftScaler = 1.0;
+  float rightScaler = 1.0;
+  float rightMotorSpeed = 0.0;
+  float leftMotorSpeed = 0.0;
+} turningData_S;
+turningData_S turningData;
+
 void getAccelData() {
   float ax, ay, az;
   if (IMU.accelerationAvailable()) {
@@ -77,7 +87,7 @@ void calculateAngles() {
 
   // Serial.print("Dt: ");
   // Serial.println(dt);
-  // Serial.print("Gyro Gy: ");
+  // Serial.print("Gyro Gx: ");
   // Serial.println(gyroData.gy);
   // Serial.print("Gyro Roll Angle: ");
   // Serial.println(angleData.gyroRoll);

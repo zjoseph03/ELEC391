@@ -1,4 +1,5 @@
 // Documentation for mbedOS: https://os.mbed.com/docs/mbed-os/v6.15/apis/pwmout.html
+// NOTE: THIS FILE IS NO LONGER RELEVANT
 
 #include <Arduino.h>
 #include <mbed.h>
