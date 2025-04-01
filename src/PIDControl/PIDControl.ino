@@ -52,7 +52,7 @@ String inputString = "";
 // PID tuning constants
 float Kp = 7.0;    // Less aggressive proportional response
 float Kd = 0.4;    // Start with zero to avoid windup
-float Ki = 115.0;   // Moderate derivative for dampening oscillations
+float Ki = 75.0;   // Moderate derivative for dampening oscillations
 
 // Used to update the OLED display
 float prevKi;
@@ -68,15 +68,19 @@ mbed::Ticker samplingTicker;
 const int samplingFreq = 99; // Sample sensor at 99.84 Hz (every 10ms). Need to experiment to see what sampling freq we can use
 float setPoint = 0;  // Target angle (upright position)
 
+bool robotOn = false;
+bool prevRobotOn = false;
+
 void updateMotorsBLE();
 void processSerialInput();
 void BLEConnect();
 void processBLEControlFlags();
+void turnOffRobot();
 
 void setup() {
   Serial.begin(9600);
   initOLED();
-  displayPIDValues(Kp, Ki, Kd);
+  displayPIDValues(Kp, Ki, Kd, robotOn);
   // while (!Serial);
   
   if (!IMU.begin()) {
@@ -121,7 +125,7 @@ void setup() {
 
   Kp = 7.0;    // Less aggressive proportional response
   Kd = 0.4;    // Start with zero to avoid windup
-  Ki = 115.0;   // Moderate derivative for dampening oscillations
+  Ki = 75.0;   // Moderate derivative for dampening oscillations
   
   // Set PWM frequency to 500Hz for all motor controllers
   // pwmController.setFrequency(500);
@@ -134,6 +138,7 @@ void setup() {
   samplingTicker.attach(mbed::callback(sampleSensors), std::chrono::milliseconds(1000 / samplingFreq));
 }
 
+// TODO: Add code to only start when button is pressed 
 void loop() {
   // Add this at the beginning of your loop
   // processSerialInput();
@@ -148,117 +153,141 @@ void loop() {
 
   // Every 200ms check any flags that were set to update the display
   if (millis() - lastDisplayUpdateTime > DISPLAY_UPDATE_INTERVAL) {
-    if (Kp != prevKp || Ki != prevKi || Kd != prevKd) {
-    displayPIDValues(Kp, Ki, Kd);
+    if (Kp != prevKp || Ki != prevKi || Kd != prevKd || prevRobotOn != robotOn)) {
+    displayPIDValues(Kp, Ki, Kd, robotOn);
     lastDisplayUpdateTime = millis();
     prevKd = Kd;
     prevKi = Ki;
     prevKp = Kp;
+    prevRobotOn = robotOn;
   }
-    
-  if (sampleFlag && BLEController::VR30Controller->controllerConnected) {
-    sampleFlag = false;
-    getAccelData();
-    getGyroData();
+  
+  // if (turningData.powerOn == false) {
+  //   turnOffRobot();
+  // } else {
 
-    calculateAngles();
-    calculateFilteredAngles();
+    // This may turn the robot off too much
+    // if (angleData.rollFiltered > 30 || angleData.rollFiltered < -30) {
+    //   turningData.powerOn = false;
+    // }
     processBLEControlFlags();
+    Serial.print("Robot On: ");
+    Serial.println(robotOn);
+    Serial.print("Integral: ");
+    Serial.println(integral);
+    Serial.print("Output: ");
+    Serial.println(output);
 
-    if (ledActive && (millis() - ledOnTime > LED_FLASH_DURATION)) {
-      digitalWrite(LED_KP_UP, LOW);
-      digitalWrite(LED_KP_DOWN, LOW);
-      digitalWrite(LED_KI_UP, LOW);
-      digitalWrite(LED_KI_DOWN, LOW);
-      digitalWrite(LED_KD, LOW);
-      ledActive = false;
-    }
-    
-    // --- PID Control Calculations ---
-    // Error is the difference between the desired setpoint (0Â°) and the measured roll angle.
-    pidError = setPoint - angleData.rollFiltered;
-    
-    // Integrate the pidError over time
-    integral += pidError * dt;
-    
-    // Calculate the derivative (rate of change of pidError)
-    derivative = (pidError - previousError) / dt;
-
-    // Compute the PID output
-    output = (Kp * pidError) + (Ki * integral) + (Kd * derivative);
-    previousError = pidError;
-    
-    // Convert the PID output to a motor speed (constrained to PWM range 0-255)
-    int motorSpeed = constrain(abs(output), 0, 255);
-    motorSpeed = 255 - motorSpeed;
-
-    if (turningData.turningRight) {
-      turningData.rightScaler = 30;
-      turningData.leftScaler = -50;
-    } else if (turningData.turningLeft) {
-      turningData.rightScaler = -50;
-      turningData.leftScaler = 30;
+    if (robotOn == false) {
+      integral = 0; 
+      pidError = 0;
+      derivative = 0;
+      previousError = 0;
+      output = 0;
     } else {
-      turningData.rightScaler = 0.0;
-      turningData.leftScaler = 0.0;
-    }
+      if (sampleFlag && BLEController::VR30Controller->controllerConnected) {
+        sampleFlag = false;
+        getAccelData();
+        getGyroData();
 
-    printPIDData(false);
+        calculateAngles();
+        calculateFilteredAngles();
 
-    // --- Motor Control Based on PID Output ---
-    // If the output is positive, drive one set of PWM channels;
-    // if negative, drive the opposite channels.
-    turningData.rightMotorSpeed = constrain(motorSpeed + turningData.rightScaler, 0, 255);
-    turningData.leftMotorSpeed = constrain(motorSpeed + turningData.leftScaler, 0, 255);
+        if (ledActive && (millis() - ledOnTime > LED_FLASH_DURATION)) {
+          digitalWrite(LED_KP_UP, LOW);
+          digitalWrite(LED_KP_DOWN, LOW);
+          digitalWrite(LED_KI_UP, LOW);
+          digitalWrite(LED_KI_DOWN, LOW);
+          digitalWrite(LED_KD, LOW);
+          ledActive = false;
+        }
+        
+        // --- PID Control Calculations ---
+        // Error is the difference between the desired setpoint (0Â°) and the measured roll angle.
+        pidError = setPoint - angleData.rollFiltered;
+        
+        // Integrate the pidError over time
+        integral += pidError * dt;
+        
+        // Calculate the derivative (rate of change of pidError)
+        derivative = (pidError - previousError) / dt;
 
-    if (output > 0) {
-      // Correcting for a tilt that requires forward movement:
-      // Activate backward channels to drive the robot forward.
-      analogWrite(2, 255);
-      analogWrite(3, turningData.rightMotorSpeed);
-      analogWrite(4, 255);
-      analogWrite(5, turningData.leftMotorSpeed);
+        // Compute the PID output
+        output = (Kp * pidError) + (Ki * integral) + (Kd * derivative);
+        previousError = pidError;
+        
+        // Convert the PID output to a motor speed (constrained to PWM range 0-255)
+        int motorSpeed = constrain(abs(output), 0, 255);
+        motorSpeed = 255 - motorSpeed;
 
-      
-      
-      // pwmController.writePWMDutyCycle(motorSpeed);
-      // pwmController2.writePWMDutyCycle(0);
-      // pwmController3.writePWMDutyCycle(motorSpeed);
-      // pwmController4.writePWMDutyCycle(0);
-      
-      // Serial.println("Moving Forward (Correcting Tilt)");
-      // Serial.print("Motor Speed: ");
-      // Serial.println(motorSpeed);
-    } else if (output < 0) {
-      // Correcting for a tilt that requires backward movement:
-      // Activate forward channels to drive the robot backward.
-      analogWrite(2, turningData.rightMotorSpeed);
-      analogWrite(3, 255);
-      analogWrite(4, turningData.leftMotorSpeed);
-      analogWrite(5, 255);
+        if (turningData.turningRight) {
+          turningData.rightScaler = 15;
+          turningData.leftScaler = -15;
+        } else if (turningData.turningLeft) {
+          turningData.rightScaler = -15;
+          turningData.leftScaler = 15;
+        } else {
+          turningData.rightScaler = 0.0;
+          turningData.leftScaler = 0.0;
+        }
+
+        printPIDData(false);
+
+        // --- Motor Control Based on PID Output ---
+        // If the output is positive, drive one set of PWM channels;
+        // if negative, drive the opposite channels.
+        turningData.rightMotorSpeed = constrain(motorSpeed + turningData.rightScaler, 0, 255);
+        turningData.leftMotorSpeed = constrain(motorSpeed + turningData.leftScaler, 0, 255);
+
+        if (output > 0) {
+          // Correcting for a tilt that requires forward movement:
+          // Activate backward channels to drive the robot forward.
+          analogWrite(2, 255);
+          analogWrite(3, turningData.rightMotorSpeed);
+          analogWrite(4, 255);
+          analogWrite(5, turningData.leftMotorSpeed);
+
+          
+          
+          // pwmController.writePWMDutyCycle(motorSpeed);
+          // pwmController2.writePWMDutyCycle(0);
+          // pwmController3.writePWMDutyCycle(motorSpeed);
+          // pwmController4.writePWMDutyCycle(0);
+          
+          // Serial.println("Moving Forward (Correcting Tilt)");
+          // Serial.print("Motor Speed: ");
+          // Serial.println(motorSpeed);
+        } else if (output < 0) {
+          // Correcting for a tilt that requires backward movement:
+          // Activate forward channels to drive the robot backward.
+          analogWrite(2, turningData.rightMotorSpeed);
+          analogWrite(3, 255);
+          analogWrite(4, turningData.leftMotorSpeed);
+          analogWrite(5, 255);
 
 
-      // pwmController.writePWMDutyCycle(0);
-      // pwmController2.writePWMDutyCycle(motorSpeed);
-      // pwmController3.writePWMDutyCycle(0);
-      // pwmController4.writePWMDutyCycle(motorSpeed);
-      
-      // Serial.println("Moving Backward (Correcting Tilt)");
-      // Serial.print("Motor Speed: ");
-      // Serial.println(motorSpeed);
-      } else {
-        // If PID output is zero, stop the motors.
-        analogWrite(2, 0);
-        analogWrite(3, 0);
-        analogWrite(4, 0);
-        analogWrite(5, 0);
+          // pwmController.writePWMDutyCycle(0);
+          // pwmController2.writePWMDutyCycle(motorSpeed);
+          // pwmController3.writePWMDutyCycle(0);
+          // pwmController4.writePWMDutyCycle(motorSpeed);
+          
+          // Serial.println("Moving Backward (Correcting Tilt)");
+          // Serial.print("Motor Speed: ");
+          // Serial.println(motorSpeed);
+        } else {
+          // If PID output is zero, stop the motors.
+          analogWrite(2, 0);
+          analogWrite(3, 0);
+          analogWrite(4, 0);
+          analogWrite(5, 0);
 
-      // pwmController.writePWMDutyCycle(0);
-      // pwmController2.writePWMDutyCycle(0);
-      // pwmController3.writePWMDutyCycle(0);
-      // pwmController4.writePWMDutyCycle(0);
-      
-      // Serial.println("No Movement (Balanced)");
+        // pwmController.writePWMDutyCycle(0);
+        // pwmController2.writePWMDutyCycle(0);
+        // pwmController3.writePWMDutyCycle(0);
+        // pwmController4.writePWMDutyCycle(0);
+        
+        // Serial.println("No Movement (Balanced)");
+        }
       }
     }
   }
@@ -271,6 +300,11 @@ void BLEConnect() {
   } else if (BLEController::VR30Controller && !BLEController::VR30Controller->peripheral.connected()) {
     // TODO: Add code to put robot in balancing mode when controller is disconnected
     Serial.println("Controller Disconnected");
+    
+    // Choosing to enter balance mode when controller disconnects instead of turning off
+    //turningData.powerOn = false;
+    pidFlags.balance = true;
+    
     digitalWrite(LED_BUILTIN, LOW);
 
     // Reset flags and clean up
@@ -340,7 +374,7 @@ void processBLEControlFlags() {
     pidFlags.balance = false;
     turningData.turningLeft = false;
     turningData.turningRight = false;
-
+    
     // Ki = 50;
     digitalWrite(LED_KI_UP, HIGH);
     ledOnTime = millis();
@@ -371,11 +405,12 @@ void processBLEControlFlags() {
   //   ledActive = true;
   // }
 
-  // if (pidFlags.KdUpFlag) {
-  //   Kd += kdIncrement;
-  //   Serial.print("Kd+ : ");
-  //   Serial.println(Kd);
-  //   pidFlags.KdUpFlag = false;
+  if (pidFlags.a) {
+    // Kd += kdIncrement;
+    robotOn = true;
+    Serial.print("Kd+ : ");
+    Serial.println(Kd);
+    pidFlags.a = false;
     
   //   // Flash Kd LED once for UP
   //   digitalWrite(LED_KD, HIGH);
@@ -383,11 +418,12 @@ void processBLEControlFlags() {
   //   ledActive = true;
   // }
   
-  // if (pidFlags.KdDownFlag) {
-  //   Kd -= kdIncrement;
-  //   Serial.print("Kd- : ");
-  //   Serial.println(Kd);
-  //   pidFlags.KdDownFlag = false;
+  if (pidFlags.y) {
+    // Kd -= kdIncrement;
+    robotOn = false;
+    Serial.print("Kd- : ");
+    Serial.println(Kd);
+    pidFlags.y = false;
     
     // Flash Kd LED twice for DOWN (handled with a pattern)
     digitalWrite(LED_KD, HIGH);
@@ -473,16 +509,14 @@ void processSerialInput() {
       Serial.print("Kd decreased to: ");
       Serial.println(Kd, 6);
     }
-    else if (inputString.equals("t") || inputString.equals("T")) {
-      filterFactor += filterIncrement;
-      Serial.print("Filter decreased to: ");
-      Serial.println(filterFactor, 6);
-    }
-    else if (inputString.equals("g") || inputString.equals("G")) {
-      filterFactor -= filterIncrement;
-      Serial.print("Filter decreased to: ");
-      Serial.println(filterFactor, 6);
-    }
+    // else if (inputString.equals("t") || inputString.equals("T")) {
+    //   Serial.print("Filter decreased to: ");
+    //   Serial.println(filterFactor, 6);
+    // }
+    // else if (inputString.equals("g") || inputString.equals("G")) {
+    //   Serial.print("Filter decreased to: ");
+    //   Serial.println(filterFactor, 6);
+    // }
 
     else if (inputString.equals("s")) {
       // Print current PID values
@@ -534,4 +568,17 @@ float printPIDData(bool printData) {
       Serial.println();
       Serial.println();
     }
+}
+
+void turnOffRobot() {
+  // Turn off the motors
+  analogWrite(2, 255);
+  analogWrite(3, 255);
+  analogWrite(4, 255);
+  analogWrite(5, 255);
+  derivative = 0;
+  integral = 0;
+  pidError = 0;
+  output = 0;
+  previousError = 0;
 }

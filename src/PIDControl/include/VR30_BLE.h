@@ -27,17 +27,24 @@ typedef struct __attribute__((__packed__)) {
   uint8_t powerSelect;
 } vr_30_mouse;
 
+typedef struct __attribute__((__packed__)) {
+  uint8_t okButton;
+  uint8_t filler[17];
+} vr_30_ok;
+
 // TODO: Label KdUpFlag and KdDownFlag correactly with the actual button labels
 struct PIDFlags {
   bool forward = false;
   bool x = false;
-  bool KdUpFlag = false;
+  bool a = false;
   bool backward = false;
   bool b = false;
-  bool KdDownFlag = false;
+  bool y = false;
   bool left = false;
   bool right = false;
   bool balance = false;
+  bool OK = true;
+  bool okButtonPressed = false;
 } pidFlags;
 
 
@@ -53,6 +60,7 @@ public:
   bool bleControllerUpdated = false;
   vr_30_mouse *joy_mouse;
   vr_30_game *joy_game;
+  vr_30_ok *joy_ok;
 
   // Global pointer to the robot instance for the static callback
   static BLEController* VR30Controller;
@@ -111,7 +119,7 @@ public:
               pidFlags.x = true;
               break;
             case 0xE9:
-              pidFlags.KdUpFlag = true;
+              pidFlags.a = true;
               break;
             case 0xB4:
               pidFlags.backward = true;
@@ -120,7 +128,7 @@ public:
               pidFlags.b = true;
               break;
             case 0x40:
-              pidFlags.KdDownFlag = true;
+              pidFlags.y = true;
               break;
             case 0xB5:
               pidFlags.left = true;
@@ -134,6 +142,27 @@ public:
             default:
               break;
           }
+        } else if (report_len == sizeof(vr_30_ok)) {
+          // NOTE: This is not going to work correctly because report changes size depending on the button pressed in mouse mode. 
+          gameMode = false;
+          joy_ok = (vr_30_ok *)report;
+          if (joy_ok->okButton == 0x28) {
+            Serial.print("OK Button State: ");
+            Serial.print(pidFlags.okButtonPressed, HEX);
+            pidFlags.okButtonPressed = true;
+          } else if (joy_ok->okButton == 0x00) {
+            Serial.print("OK Button State: ");
+            Serial.print(pidFlags.OK);
+            if (pidFlags.okButtonPressed) {
+              pidFlags.OK = true;  // Toggle the action flag only on release after press
+              pidFlags.okButtonPressed = false;
+            }
+          }
+
+        } else {
+          Serial.print("Unknown report length: ");
+          Serial.println(report_len);
+
         }
         Serial.println();
       }
