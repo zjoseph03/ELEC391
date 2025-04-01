@@ -38,6 +38,7 @@ typedef struct angleData {
 angleData_S angleData;
 
 typedef struct turningData {
+  bool powerOn = false;
   bool turningLeft = false;
   bool turningRight = false;
   float leftScaler = 1.0;

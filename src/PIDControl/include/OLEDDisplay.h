@@ -35,7 +35,7 @@ void displayTestMessage() {
   display.display();
 }
 
-void displayPIDValues(float kp, float ki, float kd) {
+void displayPIDValues(float kp, float ki, float kd, bool robotOn) {
   display.clearDisplay();
   display.setTextSize(1);
   display.setTextColor(WHITE);
@@ -54,8 +54,17 @@ void displayPIDValues(float kp, float ki, float kd) {
   display.setCursor(0, 40);
   display.print("Kd: ");
   display.print(kd, 3);  // 3 decimal places
+
+  display.setCursor(0, 55);
+  if (robotOn) {
+    display.print("Robot: ON");
+  } else {
+    display.print("Robot: OFF");
+  }
   
   display.display();
 }
+
+
 
 #endif
