@@ -178,7 +178,7 @@ public:
     BLE.scanForName("MOCUTE-052Fe-AUTO", true);
     peripheral = BLE.available();
     // Serial.print("Searching\n");
-    Serial.println(peripheral.localName());
+    // Serial.println(peripheral.localName());
     if (peripheral && peripheral.localName() == "MOCUTE-052Fe-AUTO") {
         // discovered a peripheral, print out address, local name, and advertised service
         Serial.print(peripheral.address());

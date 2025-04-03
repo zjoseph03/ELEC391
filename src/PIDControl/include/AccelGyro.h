@@ -71,10 +71,14 @@ void getGyroData() {
   }
 }
 
-void calculateAngles() {
+void calculateDt() {
   currentTime = millis();
   dt = (currentTime - previousTime) / 1000.0; // in seconds
   previousTime = currentTime;
+}
+
+void calculateAngles() {
+  calculateDt();
 
   // Accelerometer-based angles (in degrees) - KEEP THIS PART
   angleData.accelRoll = atan2(-accelData.ax, sqrt(accelData.ay * accelData.ay + accelData.az * accelData.az)) * 180.0 / PI;

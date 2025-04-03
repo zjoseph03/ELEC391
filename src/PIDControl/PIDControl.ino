@@ -7,6 +7,8 @@
 #include <ArduinoBLE.h>
 #include "include/VR30_BLE.h"
 #include "include/OLEDDisplay.h"
+#include "include/SOC.h"
+#include "include/Sonar.h"
 
 // Interrupt Includes
 #include <mbed.h>
@@ -22,6 +24,8 @@
 #define SDA_DATA     A5
 #define LED_KD       A6  // This LED will use patterns for up/down
 #define LED_FLASH_DURATION 200
+
+// 
 
 // Non-blocking LED timing TODO: get rid of these
 unsigned long ledOnTime = 0;
@@ -67,19 +71,29 @@ double output = 0;
 mbed::Ticker samplingTicker;
 const int samplingFreq = 99; // Sample sensor at 99.84 Hz (every 10ms). Need to experiment to see what sampling freq we can use
 float setPoint = 0;  // Target angle (upright position)
+float setPointForward = 3.0; // Target angle for forward movement
 
 bool robotOn = false;
 bool prevRobotOn = false;
+
+unsigned long loopDuration;
+unsigned long lastLoopTime;
+
+// Add at the top with your other global variables
+unsigned long lastSonarTime = 0;
+const unsigned long SONAR_UPDATE_INTERVAL = 1000; // 1 second
 
 void updateMotorsBLE();
 void processSerialInput();
 void BLEConnect();
 void processBLEControlFlags();
 void turnOffRobot();
+void printPIDData(bool printData);
 
 void setup() {
   Serial.begin(9600);
   initOLED();
+  socSetup();
   displayPIDValues(Kp, Ki, Kd, robotOn);
   // while (!Serial);
   
@@ -106,6 +120,9 @@ void setup() {
   pinMode(3, OUTPUT);
   pinMode(4, OUTPUT);
   pinMode(5, OUTPUT);
+
+  pinMode(TRIG_PIN, OUTPUT);
+  pinMode(ECHO_PIN, INPUT);
 
   // Initialize LED pins
   pinMode(LED_BUILTIN, OUTPUT);
@@ -142,24 +159,26 @@ void setup() {
 void loop() {
   // Add this at the beginning of your loop
   // processSerialInput();
+
+  // unsigned long currentTime = micros();  // Get current time in microseconds
+  // loopDuration = currentTime - lastLoopTime;  // Calculate loop execution time
+  // lastLoopTime = currentTime;  // Update last recorded time
+  // Serial.print("Loop Duration: ");
+  // Serial.println(loopDuration); // Print loop duration for debugging
+
   BLE.poll();
   BLEConnect();
 
-  // Arrays to store temporary sensor data
-  float accelDataTemp[3];
-  float gyroDataTemp[3];
-  float dutyCycle;
-  float dutyCycleBackwards;
-
   // Every 200ms check any flags that were set to update the display
   if (millis() - lastDisplayUpdateTime > DISPLAY_UPDATE_INTERVAL) {
-    if (Kp != prevKp || Ki != prevKi || Kd != prevKd || prevRobotOn != robotOn)) {
-    displayPIDValues(Kp, Ki, Kd, robotOn);
-    lastDisplayUpdateTime = millis();
-    prevKd = Kd;
-    prevKi = Ki;
-    prevKp = Kp;
-    prevRobotOn = robotOn;
+    if (Kp != prevKp || Ki != prevKi || Kd != prevKd || prevRobotOn != robotOn) {
+      displayPIDValues(Kp, Ki, Kd, robotOn);
+      lastDisplayUpdateTime = millis();
+      prevKd = Kd;
+      prevKi = Ki;
+      prevKp = Kp;
+      prevRobotOn = robotOn;
+    }
   }
   
   // if (turningData.powerOn == false) {
@@ -168,30 +187,40 @@ void loop() {
 
     // This may turn the robot off too much
     // if (angleData.rollFiltered > 30 || angleData.rollFiltered < -30) {
-    //   turningData.powerOn = false;
-    // }
+    //   robotOn = false;
+    // } 
+
+    // Functions that will run regardless of robot state
     processBLEControlFlags();
-    Serial.print("Robot On: ");
-    Serial.println(robotOn);
-    Serial.print("Integral: ");
-    Serial.println(integral);
-    Serial.print("Output: ");
-    Serial.println(output);
+    ledSoc();
+
+    // Serial.print("Robot On: ");
+    // Serial.println(robotOn);
+    // Serial.print("Integral: ");
+    // Serial.println(integral);
+    // Serial.print("PID Error: ");
+    // Serial.println(pidError);
+    // Serial.print("PID Derivative: ");
+    // Serial.println(derivative);
+    // Serial.print("Output: ");
+    // Serial.println(output);
 
     if (robotOn == false) {
-      integral = 0; 
-      pidError = 0;
-      derivative = 0;
-      previousError = 0;
-      output = 0;
+      turnOffRobot();
     } else {
       if (sampleFlag && BLEController::VR30Controller->controllerConnected) {
         sampleFlag = false;
+
         getAccelData();
         getGyroData();
 
         calculateAngles();
         calculateFilteredAngles();
+
+        if (millis() - lastSonarTime > SONAR_UPDATE_INTERVAL) {
+          runSonar();
+          lastSonarTime = millis();
+        }
 
         if (ledActive && (millis() - ledOnTime > LED_FLASH_DURATION)) {
           digitalWrite(LED_KP_UP, LOW);
@@ -287,7 +316,6 @@ void loop() {
         // pwmController4.writePWMDutyCycle(0);
         
         // Serial.println("No Movement (Balanced)");
-        }
       }
     }
   }
@@ -343,7 +371,7 @@ void processBLEControlFlags() {
   // Process PID flags
   if (pidFlags.forward) {
     // Kp += kpIncrement;
-    setPoint = 3.0;
+    setPoint = setPointForward;
     // Ki = 40;
     // Serial.println("Forward");
     // Serial.println(setPoint);
@@ -381,7 +409,7 @@ void processBLEControlFlags() {
     ledActive = true;
   }
   if (pidFlags.x) {
-    Kp += kpIncrement;
+    setPointForward += 1;
     Serial.print("Kp+ : ");
     Serial.println(Kp);
     pidFlags.x = false;
@@ -394,10 +422,11 @@ void processBLEControlFlags() {
   }
   
   if (pidFlags.b) {
-    Kp -= kpIncrement;
+    setPointForward -= 1;   
     Serial.print("Kp- : ");
     Serial.println(Kp);
     pidFlags.b = false;
+  }
     
   //   // Flash Ki DOWN LED
   //   digitalWrite(LED_KI_DOWN, HIGH);
@@ -411,6 +440,7 @@ void processBLEControlFlags() {
     Serial.print("Kd+ : ");
     Serial.println(Kd);
     pidFlags.a = false;
+  }
     
   //   // Flash Kd LED once for UP
   //   digitalWrite(LED_KD, HIGH);
@@ -433,7 +463,7 @@ void processBLEControlFlags() {
 
   // Turn left
   if (pidFlags.left) {
-    // Ki += kiIncrement;
+    // setPointForward += 1;
     // Serial.print("Ki- : ");
     // Serial.println(Ki);
     pidFlags.left = false;
@@ -448,7 +478,7 @@ void processBLEControlFlags() {
 
   // Turn right
   if (pidFlags.right) {
-    // Ki -= kiIncrement;
+    // setPointForward -= 1;
     // Serial.println(Ki);
 
     pidFlags.right = false;
@@ -543,7 +573,7 @@ void processSerialInput() {
   }
 }
 
-float printPIDData(bool printData) {
+void printPIDData(bool printData) {
     // Debug print of the PID output
     if (printData) {
       Serial.print("Kp: ");
@@ -581,4 +611,5 @@ void turnOffRobot() {
   pidError = 0;
   output = 0;
   previousError = 0;
+  calculateDt();
 }
