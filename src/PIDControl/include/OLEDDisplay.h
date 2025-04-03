@@ -35,13 +35,13 @@ void displayTestMessage() {
   display.display();
 }
 
-void displayPIDValues(float kp, float ki, float kd, bool robotOn) {
+void displayPIDValues(float kp, float ki, float kd, bool robotOn, float setPointForward) {
   display.clearDisplay();
   display.setTextSize(1);
   display.setTextColor(WHITE);
   
   // Display Kp
-  display.setCursor(0, 10);
+  display.setCursor(0, 0);
   display.print("Kp: ");
   display.print(kp, 3);  // 3 decimal places
   
@@ -61,6 +61,10 @@ void displayPIDValues(float kp, float ki, float kd, bool robotOn) {
   } else {
     display.print("Robot: OFF");
   }
+
+  display.setCursor(60, 0);
+  display.print("Angle: ");
+  display.print(setPointForward, 3);  // 3 decimal places
   
   display.display();
 }

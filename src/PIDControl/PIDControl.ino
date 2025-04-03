@@ -72,6 +72,7 @@ mbed::Ticker samplingTicker;
 const int samplingFreq = 99; // Sample sensor at 99.84 Hz (every 10ms). Need to experiment to see what sampling freq we can use
 float setPoint = 0;  // Target angle (upright position)
 float setPointForward = 3.0; // Target angle for forward movement
+float prevSetPointForward;
 
 bool robotOn = false;
 bool prevRobotOn = false;
@@ -94,7 +95,7 @@ void setup() {
   Serial.begin(9600);
   initOLED();
   socSetup();
-  displayPIDValues(Kp, Ki, Kd, robotOn);
+  displayPIDValues(Kp, Ki, Kd, robotOn, setPoint);
   // while (!Serial);
   
   if (!IMU.begin()) {
@@ -171,13 +172,14 @@ void loop() {
 
   // Every 200ms check any flags that were set to update the display
   if (millis() - lastDisplayUpdateTime > DISPLAY_UPDATE_INTERVAL) {
-    if (Kp != prevKp || Ki != prevKi || Kd != prevKd || prevRobotOn != robotOn) {
-      displayPIDValues(Kp, Ki, Kd, robotOn);
+    if (Kp != prevKp || Ki != prevKi || Kd != prevKd || prevRobotOn != robotOn || setPointForward != prevSetPointForward) {
+      displayPIDValues(Kp, Ki, Kd, robotOn, setPointForward);
       lastDisplayUpdateTime = millis();
       prevKd = Kd;
       prevKi = Ki;
       prevKp = Kp;
       prevRobotOn = robotOn;
+      prevSetPointForward = setPointForward;
     }
   }
   
@@ -192,7 +194,7 @@ void loop() {
 
     // Functions that will run regardless of robot state
     processBLEControlFlags();
-    ledSoc();
+    // ledSoc();
 
     // Serial.print("Robot On: ");
     // Serial.println(robotOn);
@@ -250,11 +252,11 @@ void loop() {
         motorSpeed = 255 - motorSpeed;
 
         if (turningData.turningRight) {
-          turningData.rightScaler = 15;
-          turningData.leftScaler = -15;
+          turningData.rightScaler = 50;
+          turningData.leftScaler = 0;
         } else if (turningData.turningLeft) {
-          turningData.rightScaler = -15;
-          turningData.leftScaler = 15;
+          turningData.rightScaler = 0;
+          turningData.leftScaler = 50;
         } else {
           turningData.rightScaler = 0.0;
           turningData.leftScaler = 0.0;
@@ -463,7 +465,7 @@ void processBLEControlFlags() {
 
   // Turn left
   if (pidFlags.left) {
-    // setPointForward += 1;
+    // Ki += kiIncrement;
     // Serial.print("Ki- : ");
     // Serial.println(Ki);
     pidFlags.left = false;
@@ -478,10 +480,10 @@ void processBLEControlFlags() {
 
   // Turn right
   if (pidFlags.right) {
-    // setPointForward -= 1;
-    // Serial.println(Ki);
-
+    //Ki -= kiIncrement;
     pidFlags.right = false;
+    // setPointForward -= 1;
+ 
     turningData.turningRight = true;
     
     // Flash Kd LED twice for DOWN (handled with a pattern)
