@@ -35,6 +35,32 @@ void displayTestMessage() {
   display.display();
 }
 
+void displayInfo(bool robotOn, float batteryCharge, bool bleStatus) {
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+
+  display.setCursor(0, 0);
+  if (robotOn) {
+    display.print("Robot: ON");
+  } else {
+    display.print("Robot: OFF");
+  }
+
+  display.setCursor(0, 25);
+  if (bleStatus) {
+    display.print("BLE: Connected");
+  } else {
+    display.print("BLE: Disconnected");
+  }
+
+  display.setCursor(0, 40);
+  display.print("Battery: ");
+  display.print(batteryCharge, 3);  // 3 decimal places
+  
+  display.display();
+}
+
 void displayPIDValues(float kp, float ki, float kd, bool robotOn, float setPointForward) {
   display.clearDisplay();
   display.setTextSize(1);

@@ -1,6 +1,6 @@
 {
     "board": "arduino:mbed_nano:nano33ble",
-    "port": "COM17",
+    "port": "COM20",
     "output": "./build",
     "sketch": "src\\PIDControl\\PIDControl.ino"
 }

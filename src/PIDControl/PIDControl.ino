@@ -54,9 +54,9 @@ bool serialCommandReady = false;
 String inputString = "";
 
 // PID tuning constants
-float Kp = 7.0;    // Less aggressive proportional response
-float Kd = 0.4;    // Start with zero to avoid windup
-float Ki = 75.0;   // Moderate derivative for dampening oscillations
+float Kp;    // Less aggressive proportional response
+float Kd;    // Start with zero to avoid windup
+float Ki;   // Moderate derivative for dampening oscillations
 
 // Used to update the OLED display
 float prevKi;
@@ -70,19 +70,25 @@ double output = 0;
 
 mbed::Ticker samplingTicker;
 const int samplingFreq = 99; // Sample sensor at 99.84 Hz (every 10ms). Need to experiment to see what sampling freq we can use
-float setPoint = 0;  // Target angle (upright position)
+float baseSetPoint = 1.0 ;
+float setPoint = baseSetPoint;  // Target angle s(upright position)
 float setPointForward = 3.0; // Target angle for forward movement
 float prevSetPointForward;
 
 bool robotOn = false;
 bool prevRobotOn = false;
 
+bool prevBleStatus = false; // Previous BLE status for display update
+
+bool closeToObstacle = false; // Flag for obstacle detection
+bool backwardRecovery = false; // Flag for backward recovery
+
 unsigned long loopDuration;
 unsigned long lastLoopTime;
 
 // Add at the top with your other global variables
 unsigned long lastSonarTime = 0;
-const unsigned long SONAR_UPDATE_INTERVAL = 1000; // 1 second
+const unsigned long SONAR_UPDATE_INTERVAL = 250; // 1 second
 
 void updateMotorsBLE();
 void processSerialInput();
@@ -92,10 +98,19 @@ void turnOffRobot();
 void printPIDData(bool printData);
 
 void setup() {
+  pinMode(PIN_NEOPIXEL, OUTPUT);  // Set Neopixel pin as output
+  pinMode(adcPin, INPUT);       // Set ADC pin as input
+
   Serial.begin(9600);
   initOLED();
-  socSetup();
-  displayPIDValues(Kp, Ki, Kd, robotOn, setPoint);
+
+  pixels.begin();
+  pixels.clear();
+  pixels.show();
+
+  analogReadResolution(10);        // Set ADC resolution (0-1023)
+  displayInfo(robotOn, ledSoc(), false);
+  //displayPIDValues(Kp, Ki, Kd, robotOn, setPoint);
   // while (!Serial);
   
   if (!IMU.begin()) {
@@ -172,14 +187,18 @@ void loop() {
 
   // Every 200ms check any flags that were set to update the display
   if (millis() - lastDisplayUpdateTime > DISPLAY_UPDATE_INTERVAL) {
-    if (Kp != prevKp || Ki != prevKi || Kd != prevKd || prevRobotOn != robotOn || setPointForward != prevSetPointForward) {
-      displayPIDValues(Kp, Ki, Kd, robotOn, setPointForward);
+    if (prevRobotOn != robotOn || prevBleStatus != BLEController::VR30Controller->controllerConnected) {
+      displayInfo(robotOn, ledSoc(), BLEController::VR30Controller->controllerConnected);
       lastDisplayUpdateTime = millis();
-      prevKd = Kd;
-      prevKi = Ki;
-      prevKp = Kp;
       prevRobotOn = robotOn;
-      prevSetPointForward = setPointForward;
+      prevBleStatus = BLEController::VR30Controller->controllerConnected;
+
+      
+      // displayPIDValues(Kp, Ki, Kd, robotOn, setPointForward);
+      // prevKd = Kd;
+      // prevKi = Ki;
+      // prevKp = Kp;
+      // prevSetPointForward = setPointForward;
     }
   }
   
@@ -194,7 +213,7 @@ void loop() {
 
     // Functions that will run regardless of robot state
     processBLEControlFlags();
-    // ledSoc();
+    float batteryCharge = ledSoc();
 
     // Serial.print("Robot On: ");
     // Serial.println(robotOn);
@@ -202,6 +221,8 @@ void loop() {
     // Serial.println(integral);
     // Serial.print("PID Error: ");
     // Serial.println(pidError);
+    // Serial.print(", Angle=");
+    // Serial.println(angleData.rollFiltered, 6);
     // Serial.print("PID Derivative: ");
     // Serial.println(derivative);
     // Serial.print("Output: ");
@@ -220,8 +241,14 @@ void loop() {
         calculateFilteredAngles();
 
         if (millis() - lastSonarTime > SONAR_UPDATE_INTERVAL) {
-          runSonar();
+          closeToObstacle = runSonar();
           lastSonarTime = millis();
+        }
+        
+        if (closeToObstacle == true) {
+          baseSetPoint = -3.0;
+        } else {
+          baseSetPoint = 0.0;
         }
 
         if (ledActive && (millis() - ledOnTime > LED_FLASH_DURATION)) {
@@ -370,6 +397,27 @@ void updateMotorsBLE() {
 // Function used to process flags triggered by BLE inputs
 // NOTE: this is also used for on the fly PID tuning at the moment
 void processBLEControlFlags() {
+  if (pidFlags.a) {
+    ledGreen();
+    robotOn = true;
+    Serial.println("Robot On");
+    // ledDisplay(NUMPIXELS, 50, colors.green); // Initialize Neopixel with red color
+    pidFlags.a = false;
+  }
+  
+  if (pidFlags.y) {
+    // Kd -= kdIncrement;
+    robotOn = false;
+    ledRed();
+    Serial.println("Robot Off");
+    // ledDisplay(NUMPIXELS, 50, colors.red); // Initialize Neopixel with red color
+    pidFlags.y = false;
+  }
+
+  // if (closeToObstacle) {
+  //   return;
+  // }
+
   // Process PID flags
   if (pidFlags.forward) {
     // Kp += kpIncrement;
@@ -399,17 +447,18 @@ void processBLEControlFlags() {
     ledActive = true;
   }
   if (pidFlags.balance) {
-    Serial.println("Balance Mode");
-    setPoint = 0;
-    pidFlags.balance = false;
-    turningData.turningLeft = false;
-    turningData.turningRight = false;
-    
-    // Ki = 50;
-    digitalWrite(LED_KI_UP, HIGH);
-    ledOnTime = millis();
-    ledActive = true;
+      Serial.println("Balance Mode");
+      setPoint = baseSetPoint;
+      pidFlags.balance = false;
+      turningData.turningLeft = false;
+      turningData.turningRight = false;
+      
+      // Ki = 50;
+      digitalWrite(LED_KI_UP, HIGH);
+      ledOnTime = millis();
+      ledActive = true;
   }
+
   if (pidFlags.x) {
     setPointForward += 1;
     Serial.print("Kp+ : ");
@@ -435,33 +484,6 @@ void processBLEControlFlags() {
   //   ledOnTime = millis();
   //   ledActive = true;
   // }
-
-  if (pidFlags.a) {
-    // Kd += kdIncrement;
-    robotOn = true;
-    Serial.print("Kd+ : ");
-    Serial.println(Kd);
-    pidFlags.a = false;
-  }
-    
-  //   // Flash Kd LED once for UP
-  //   digitalWrite(LED_KD, HIGH);
-  //   ledOnTime = millis();
-  //   ledActive = true;
-  // }
-  
-  if (pidFlags.y) {
-    // Kd -= kdIncrement;
-    robotOn = false;
-    Serial.print("Kd- : ");
-    Serial.println(Kd);
-    pidFlags.y = false;
-    
-    // Flash Kd LED twice for DOWN (handled with a pattern)
-    digitalWrite(LED_KD, HIGH);
-    ledOnTime = millis();
-    ledActive = true;
-  }
 
   // Turn left
   if (pidFlags.left) {

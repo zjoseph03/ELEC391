@@ -177,10 +177,10 @@ public:
     // check if a peripheral has been discovered
     BLE.scanForName("MOCUTE-052Fe-AUTO", true);
     peripheral = BLE.available();
-    // Serial.print("Searching\n");
     // Serial.println(peripheral.localName());
     if (peripheral && peripheral.localName() == "MOCUTE-052Fe-AUTO") {
         // discovered a peripheral, print out address, local name, and advertised service
+        controllerConnected = true;
         Serial.print(peripheral.address());
         Serial.print(" '");
         Serial.print(peripheral.localName());
@@ -198,7 +198,6 @@ public:
           if (service.equals(HID_SERVICE)) {
             Serial.println("Stop scanning");
             BLE.stopScan();
-            controllerConnected = true;
             setupPeripheral(peripheral);
             VR30Controller = this;
             // explorePeripheral(peripheral);
