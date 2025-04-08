@@ -12,7 +12,7 @@ const float maxVoltage = 11.0;     // 100% battery
 
 // Neopixel settings
 #define PIN_NEOPIXEL 11            // Digital pin connected to Neopixel data-in
-#define NUMPIXELS 12            // Total number of LEDs in the Neopixel Jewel
+#define NUMPIXELS 7            // Total number of LEDs in the Neopixel Jewel
 
 Adafruit_NeoPixel pixels(NUMPIXELS, PIN_NEOPIXEL, NEO_GRB + NEO_KHZ800);
 
@@ -44,35 +44,35 @@ struct ColorPalette {
 // Create an instance of the ColorPalette struct
 ColorPalette colors;
 
-void ledRed() {
-  // pinMode(PIN_NEOPIXEL, OUTPUT);  // Set Neopixel pin as output
-  // pinMode(adcPin, INPUT);       // Set ADC pin as input
-
-  // analogReadResolution(10);        // Set ADC resolution (0-1023)
-  // pixels.begin();                  // Initialize the Neopixel strip
+void ledSetup() {
+  analogReadResolution(10); // Use 10-bit ADC (0-1023)
+  pixels.begin();           // Initialize the Neopixel strip
   pixels.clear();
-  pixels.setBrightness(20);
-  pixels.show();
-
-  uint32_t color = pixels.Color(0, 0, 0);
-
-  for (int i = 0; i < 7; i++) {
-    pixels.setPixelColor(i, colors.red);
-  }
   pixels.show();
 }
 
-void ledGreen() {
+void ledRed() {
+  // noInterrupts();
   pixels.clear();
-  pixels.setBrightness(20);
-  pixels.show();
-
-  uint32_t color = pixels.Color(0, 0, 0);
-
+  pixels.setBrightness(40); // Set brightness to 50%
+  uint32_t color = pixels.Color(255, 0, 0);
   for (int i = 0; i < 7; i++) {
-    pixels.setPixelColor(i, colors.green);
+    pixels.setPixelColor(i, colors.white);
   }
   pixels.show();
+  // interrupts();
+}
+
+void ledGreen() {
+  // noInterrupts();
+  pixels.clear();
+  pixels.setBrightness(50); // Set brightness to 50%
+  uint32_t color = pixels.Color(0, 255, 0);
+  for (int i = 0; i < 7; i++) {
+    pixels.setPixelColor(i, color);
+  }
+  pixels.show();
+  // interrupts();
 }
 
 float ledSoc() {

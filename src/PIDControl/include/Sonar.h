@@ -49,11 +49,12 @@ bool runSonar(void) {
     // Measure the time it takes for the echo to return
     // duration = pulseIn(ECHO_PIN, HIGH, 30000);
     duration = readSonar(ECHO_PIN);
-    Serial.println(duration);
+    // Serial.println(duration);
     // Convert to distance (speed of sound = 343m/s)
 
     if (duration != 0) {
       distance = (duration * 0.0343) / 2;
+      Serial.println(distance);
       if (distance < 10 && distance > 0) {
         return true;
       } else {

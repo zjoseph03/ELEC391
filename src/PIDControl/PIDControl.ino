@@ -88,7 +88,7 @@ unsigned long lastLoopTime;
 
 // Add at the top with your other global variables
 unsigned long lastSonarTime = 0;
-const unsigned long SONAR_UPDATE_INTERVAL = 250; // 1 second
+const unsigned long SONAR_UPDATE_INTERVAL = 1000; // 1 second
 
 void updateMotorsBLE();
 void processSerialInput();
@@ -98,18 +98,15 @@ void turnOffRobot();
 void printPIDData(bool printData);
 
 void setup() {
-  pinMode(PIN_NEOPIXEL, OUTPUT);  // Set Neopixel pin as output
   pinMode(adcPin, INPUT);       // Set ADC pin as input
 
   Serial.begin(9600);
   initOLED();
-
-  pixels.begin();
-  pixels.clear();
-  pixels.show();
+  ledSetup();
+  ledRed();
 
   analogReadResolution(10);        // Set ADC resolution (0-1023)
-  displayInfo(robotOn, ledSoc(), false);
+  displayInfo(robotOn, ledSoc(), false, setPointForward);
   //displayPIDValues(Kp, Ki, Kd, robotOn, setPoint);
   // while (!Serial);
   
@@ -187,8 +184,8 @@ void loop() {
 
   // Every 200ms check any flags that were set to update the display
   if (millis() - lastDisplayUpdateTime > DISPLAY_UPDATE_INTERVAL) {
-    if (prevRobotOn != robotOn || prevBleStatus != BLEController::VR30Controller->controllerConnected) {
-      displayInfo(robotOn, ledSoc(), BLEController::VR30Controller->controllerConnected);
+    if (prevSetPointForward != setPointForward || prevRobotOn != robotOn || prevBleStatus != BLEController::VR30Controller->controllerConnected) {
+      displayInfo(robotOn, ledSoc(), BLEController::VR30Controller->controllerConnected, setPointForward);
       lastDisplayUpdateTime = millis();
       prevRobotOn = robotOn;
       prevBleStatus = BLEController::VR30Controller->controllerConnected;
@@ -198,7 +195,7 @@ void loop() {
       // prevKd = Kd;
       // prevKi = Ki;
       // prevKp = Kp;
-      // prevSetPointForward = setPointForward;
+      prevSetPointForward = setPointForward;
     }
   }
   
@@ -240,16 +237,17 @@ void loop() {
         calculateAngles();
         calculateFilteredAngles();
 
-        if (millis() - lastSonarTime > SONAR_UPDATE_INTERVAL) {
-          closeToObstacle = runSonar();
-          lastSonarTime = millis();
-        }
+        // if (millis() - lastSonarTime > SONAR_UPDATE_INTERVAL) {
+        //   noInterrupts();
+        //   closeToObstacle = runSonar();
+        //   interrupts();
+        //   lastSonarTime = millis();
+          
+        //   if (closeToObstacle == true) {
+        //     pidFlags.backward = true;
+        //   }
+        // }
         
-        if (closeToObstacle == true) {
-          baseSetPoint = -3.0;
-        } else {
-          baseSetPoint = 0.0;
-        }
 
         if (ledActive && (millis() - ledOnTime > LED_FLASH_DURATION)) {
           digitalWrite(LED_KP_UP, LOW);
@@ -401,7 +399,6 @@ void processBLEControlFlags() {
     ledGreen();
     robotOn = true;
     Serial.println("Robot On");
-    // ledDisplay(NUMPIXELS, 50, colors.green); // Initialize Neopixel with red color
     pidFlags.a = false;
   }
   
@@ -418,6 +415,20 @@ void processBLEControlFlags() {
   //   return;
   // }
 
+  if (pidFlags.backward) {
+    // Kp -= kpIncrement;
+    setPoint = -0.5;
+    // Ki = 40;
+    // Serial.println("Backward");
+    // Serial.println(setPoint);
+    pidFlags.backward = false;
+    
+    // Flash Kp DOWN LED
+    digitalWrite(LED_KP_DOWN, HIGH);
+    ledOnTime = millis();
+    ledActive = true;
+  }
+
   // Process PID flags
   if (pidFlags.forward) {
     // Kp += kpIncrement;
@@ -433,19 +444,6 @@ void processBLEControlFlags() {
     ledActive = true;
   }
   
-  if (pidFlags.backward) {
-    // Kp -= kpIncrement;
-    setPoint = -3.0;
-    // Ki = 40;
-    // Serial.println("Backward");
-    // Serial.println(setPoint);
-    pidFlags.backward = false;
-    
-    // Flash Kp DOWN LED
-    digitalWrite(LED_KP_DOWN, HIGH);
-    ledOnTime = millis();
-    ledActive = true;
-  }
   if (pidFlags.balance) {
       Serial.println("Balance Mode");
       setPoint = baseSetPoint;
@@ -635,5 +633,6 @@ void turnOffRobot() {
   pidError = 0;
   output = 0;
   previousError = 0;
+  closeToObstacle = false;
   calculateDt();
 }
