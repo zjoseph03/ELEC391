@@ -1,6 +1,6 @@
 ### ELEC 391
 
-# Arduino libraries to download
+# Arduino libraries to include
 - ARDUINO_NANO33BLE
 - Arduino_BMI270_BMM150
 - Adafruit_GFX
